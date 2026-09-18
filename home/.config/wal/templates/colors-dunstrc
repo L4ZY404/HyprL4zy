@@ -1,0 +1,99 @@
+# AGS Static Style: Dunst supports one frame color for all sides.
+
+[global]
+    layer = overlay
+    
+    monitor = 0
+    follow = mouse
+    width = (0, 300)
+    height = 300
+    origin = top-right
+    offset = -2x17
+    scale = 0
+    notification_limit = 3
+
+    progress_bar = true
+    progress_bar_height = 10
+    progress_bar_frame_width = 0
+    progress_bar_min_width = 125
+    progress_bar_max_width = 250
+    progress_bar_corner_radius = 4
+    icon_corner_radius = 5
+    indicate_hidden = yes
+    transparency = 0
+    separator_height = 2
+    padding = 8
+    horizontal_padding = 8
+    text_icon_padding = 10
+    frame_width = 2
+    gap_size = 5
+    separator_color = frame
+    sort = yes
+
+    font = mononoki Nerd Font 14
+    line_height = 3
+    markup = full
+    format = "󰣇 <b>%a\n󰣖  %s</b>\n%b"
+    alignment = left
+    vertical_alignment = center
+    show_age_threshold = 60
+    ellipsize = middle
+    ignore_newline = no
+    stack_duplicates = true
+    hide_duplicate_count = false
+    show_indicators = yes
+
+    icon_theme = "Tela-circle-dracula, Adwaita"
+    enable_recursive_icon_lookup = true
+    icon_position = left
+    min_icon_size = 32
+    max_icon_size = 64
+
+    sticky_history = yes
+    history_length = 20
+    dmenu = /usr/bin/rofi -dmenu -p dunst:
+    browser = /usr/bin/xdg-open
+    always_run_script = true
+    title = Dunst
+    class = Dunst
+    corner_radius = 14
+    corners = left
+    ignore_dbusclose = false
+    force_xwayland = false
+
+    mouse_left_click = context, close_current
+    mouse_middle_click = do_action, close_current
+    mouse_right_click = close_all
+
+[experimental]
+
+[Type-1]
+    summary = "t1"
+    format = "<b>%a</b>"
+
+[Type-2]
+    summary = "t2"
+    format = "<span size=\"250%\">%a</span>\n%b"
+
+
+[urgency_critical]
+    background = "{background}"
+    foreground = "{color11}"
+    frame_color = "{color11}"
+    highlight = "{color11}"
+    timeout = 0
+
+[urgency_low]
+    background = "{background}"
+    foreground = "{color11}"
+    frame_color = "{color11}"
+    highlight = "{color11}"
+    timeout = 10
+
+[urgency_normal]
+    background = "{background}"
+    foreground = "{color11}"
+    frame_color = "{color11}"
+    highlight = "{color11}"
+    timeout = 10
+    

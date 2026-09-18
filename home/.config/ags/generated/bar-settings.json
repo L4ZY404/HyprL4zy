@@ -1,0 +1,963 @@
+{
+  "version": 20,
+  "monitors": {
+    "monitor-0": {
+      "islands": [
+        {
+          "id": "island-workspaces",
+          "enabled": true,
+          "slot": "top",
+          "order": 10,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "workspaces"
+          ]
+        },
+        {
+          "id": "island-tray",
+          "enabled": true,
+          "slot": "top",
+          "order": 15,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "tray"
+          ]
+        },
+        {
+          "id": "island-music",
+          "enabled": true,
+          "slot": "top",
+          "order": 20,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "music"
+          ]
+        },
+        {
+          "id": "island-updates",
+          "enabled": true,
+          "slot": "top",
+          "order": 30,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "updates"
+          ]
+        },
+        {
+          "id": "island-connectivity",
+          "enabled": true,
+          "slot": "bottom",
+          "order": 10,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "network",
+            "bluetooth",
+            "volume"
+          ]
+        },
+        {
+          "id": "island-system",
+          "enabled": true,
+          "slot": "bottom",
+          "order": 20,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "temperature",
+            "cpu",
+            "memory"
+          ]
+        },
+        {
+          "id": "island-battery",
+          "enabled": true,
+          "slot": "bottom",
+          "order": 30,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "battery"
+          ]
+        },
+        {
+          "id": "island-weather",
+          "enabled": true,
+          "slot": "bottom",
+          "order": 35,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "weather"
+          ]
+        },
+        {
+          "id": "island-clock",
+          "enabled": true,
+          "slot": "bottom",
+          "order": 40,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "clock"
+          ]
+        }
+      ],
+      "modules": {
+        "workspaces": {
+          "enabled": true,
+          "slot": "top",
+          "order": 10
+        },
+        "tray": {
+          "enabled": true,
+          "slot": "top",
+          "order": 15
+        },
+        "music": {
+          "enabled": true,
+          "slot": "top",
+          "order": 20
+        },
+        "updates": {
+          "enabled": true,
+          "slot": "top",
+          "order": 30
+        },
+        "network": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 10
+        },
+        "bluetooth": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 10
+        },
+        "clipboard": {
+          "enabled": false,
+          "slot": "middle",
+          "order": 45
+        },
+        "idleInhibitor": {
+          "enabled": false,
+          "slot": "middle",
+          "order": 50
+        },
+        "volume": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 10
+        },
+        "capture": {
+          "enabled": false,
+          "slot": "middle",
+          "order": 40
+        },
+        "powerProfile": {
+          "enabled": false,
+          "slot": "bottom",
+          "order": 12
+        },
+        "notifications": {
+          "enabled": false,
+          "slot": "bottom",
+          "order": 12
+        },
+        "temperature": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 20
+        },
+        "cpu": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 20
+        },
+        "memory": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 20
+        },
+        "disk": {
+          "enabled": false,
+          "slot": "middle",
+          "order": 20
+        },
+        "brightness": {
+          "enabled": false,
+          "slot": "middle",
+          "order": 30
+        },
+        "battery": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 30
+        },
+        "weather": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 35
+        },
+        "clock": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 40
+        },
+        "powerMenu": {
+          "enabled": false,
+          "slot": "bottom",
+          "order": 50
+        }
+      },
+      "global": {
+        "scaleSm": 13,
+        "scaleMd": 14,
+        "scaleLg": 15.5,
+        "scaleXl": 19,
+        "barWidth": 3,
+        "islandWidth": 3,
+        "barPadding": {
+          "top": 0.42,
+          "right": 0.25,
+          "bottom": 0.42,
+          "left": 0.25
+        },
+        "edgeBarPadding": {
+          "top": 1.2,
+          "right": 0,
+          "bottom": 1.2,
+          "left": 0
+        }
+      },
+      "appMenu": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.22,
+          "right": 0.2,
+          "bottom": 0.22,
+          "left": 0.2
+        },
+        "buttonWidth": 1.9,
+        "buttonHeight": 1.75,
+        "buttonRadius": 0.65,
+        "buttonPadding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "buttonMargin": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "iconSize": 1.42,
+        "iconPadding": {
+          "top": 0,
+          "right": 0.3,
+          "bottom": 0,
+          "left": 0
+        },
+        "iconMargin": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "workspaces": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.58,
+          "right": 0.28,
+          "bottom": 0.58,
+          "left": 0.16
+        },
+        "contentWidth": 2.18,
+        "contentPadding": {
+          "top": 0.22,
+          "right": 0,
+          "bottom": 0.22,
+          "left": 0
+        },
+        "buttonWidth": 2.18,
+        "buttonHeight": 1.18,
+        "indicatorWidth": 0.86
+      },
+      "tray": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.34,
+          "right": 0.24,
+          "bottom": 0.34,
+          "left": 0.1
+        },
+        "moduleWidth": 2.05,
+        "iconSize": 1.15,
+        "spacing": 0.26
+      },
+      "updates": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.34,
+          "right": 0.26,
+          "bottom": 0.34,
+          "left": 0.12
+        },
+        "buttonWidth": 2.05,
+        "buttonHeight": 2.35,
+        "buttonRadius": 0.72,
+        "iconSize": 1.6,
+        "countSize": 1.2,
+        "countMargin": {
+          "top": -0.12,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "music": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.42,
+          "right": 0.26,
+          "bottom": 0.42,
+          "left": 0.12
+        },
+        "moduleWidth": 2.8,
+        "buttonWidth": 2.45,
+        "buttonHeight": 2.75,
+        "buttonRadius": 0.78,
+        "visualizerWidth": 2.8
+      },
+      "connectivity": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.36,
+          "right": 0.19,
+          "bottom": 0.36,
+          "left": 0.19
+        },
+        "moduleWidth": 2.05,
+        "buttonWidth": 2.05,
+        "buttonHeight": 2.1,
+        "buttonRadius": 0.68,
+        "iconWidth": 2.05,
+        "iconHeight": 2.1,
+        "iconSize": 1.3,
+        "iconPadding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "iconMargin": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "weather": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.36,
+          "right": 0.19,
+          "bottom": 0.36,
+          "left": 0.19
+        },
+        "moduleWidth": 2.05,
+        "buttonWidth": 2.05,
+        "buttonHeight": 2.1,
+        "buttonRadius": 0.68,
+        "buttonPadding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "buttonMargin": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "contentPadding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "iconSize": 1.8,
+        "iconPadding": {
+          "top": 0,
+          "right": 0.35,
+          "bottom": 0,
+          "left": 0
+        },
+        "iconMargin": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "tempSize": 1,
+        "tempPadding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "tempMargin": {
+          "top": -0.18,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "popoverWidth": 13.6
+      },
+      "dials": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.42,
+          "right": 0.22,
+          "bottom": 0.42,
+          "left": 0.08
+        },
+        "batteryIslandWidth": 3,
+        "batteryIslandPadding": {
+          "top": 0.42,
+          "right": 0.22,
+          "bottom": 0.42,
+          "left": 0.08
+        },
+        "dialSize": 2.5,
+        "groupWidth": 2.5
+      },
+      "disk": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.42,
+          "right": 0.22,
+          "bottom": 0.42,
+          "left": 0.08
+        },
+        "moduleWidth": 2.5,
+        "dialSize": 2.5,
+        "popoverWidth": 14
+      },
+      "clock": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.34,
+          "right": 0.24,
+          "bottom": 0.34,
+          "left": 0.1
+        },
+        "wrapperWidth": 2.25,
+        "wrapperHeight": 2.1,
+        "labelWidth": 2.25,
+        "labelHeight": 2.1,
+        "labelSize": 1.12
+      },
+      "exit": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.34,
+          "right": 0.26,
+          "bottom": 0.34,
+          "left": 0.12
+        },
+        "buttonWidth": 2.05,
+        "buttonHeight": 2.1,
+        "buttonRadius": 0.72,
+        "iconSize": 1.4
+      }
+    },
+    "monitor-1": {
+      "islands": [
+        {
+          "id": "island-workspaces",
+          "enabled": true,
+          "slot": "top",
+          "order": 10,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "workspaces"
+          ]
+        },
+        {
+          "id": "island-tray",
+          "enabled": true,
+          "slot": "top",
+          "order": 20,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "tray"
+          ]
+        },
+        {
+          "id": "island-music",
+          "enabled": true,
+          "slot": "top",
+          "order": 30,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "music"
+          ]
+        },
+        {
+          "id": "island-updates",
+          "enabled": true,
+          "slot": "top",
+          "order": 40,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "updates"
+          ]
+        },
+        {
+          "id": "island-connectivity",
+          "enabled": true,
+          "slot": "bottom",
+          "order": 10,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "network",
+            "bluetooth",
+            "volume"
+          ]
+        },
+        {
+          "id": "island-system",
+          "enabled": true,
+          "slot": "bottom",
+          "order": 20,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "temperature",
+            "cpu",
+            "memory"
+          ]
+        },
+        {
+          "id": "island-battery",
+          "enabled": true,
+          "slot": "bottom",
+          "order": 30,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "battery"
+          ]
+        },
+        {
+          "id": "island-weather",
+          "enabled": true,
+          "slot": "bottom",
+          "order": 40,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "weather"
+          ]
+        },
+        {
+          "id": "island-clock",
+          "enabled": true,
+          "slot": "bottom",
+          "order": 50,
+          "width": 3,
+          "boxed": true,
+          "modules": [
+            "clock"
+          ]
+        }
+      ],
+      "modules": {
+        "workspaces": {
+          "enabled": true,
+          "slot": "top",
+          "order": 10
+        },
+        "tray": {
+          "enabled": true,
+          "slot": "top",
+          "order": 20
+        },
+        "music": {
+          "enabled": true,
+          "slot": "top",
+          "order": 30
+        },
+        "updates": {
+          "enabled": true,
+          "slot": "top",
+          "order": 40
+        },
+        "network": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 10
+        },
+        "bluetooth": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 10
+        },
+        "clipboard": {
+          "enabled": false,
+          "slot": "middle",
+          "order": 45
+        },
+        "idleInhibitor": {
+          "enabled": false,
+          "slot": "middle",
+          "order": 50
+        },
+        "volume": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 10
+        },
+        "capture": {
+          "enabled": false,
+          "slot": "middle",
+          "order": 40
+        },
+        "powerProfile": {
+          "enabled": false,
+          "slot": "bottom",
+          "order": 12
+        },
+        "notifications": {
+          "enabled": false,
+          "slot": "bottom",
+          "order": 12
+        },
+        "temperature": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 20
+        },
+        "cpu": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 20
+        },
+        "memory": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 20
+        },
+        "disk": {
+          "enabled": false,
+          "slot": "middle",
+          "order": 20
+        },
+        "brightness": {
+          "enabled": false,
+          "slot": "middle",
+          "order": 30
+        },
+        "battery": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 30
+        },
+        "weather": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 40
+        },
+        "clock": {
+          "enabled": true,
+          "slot": "bottom",
+          "order": 50
+        },
+        "powerMenu": {
+          "enabled": false,
+          "slot": "bottom",
+          "order": 50
+        }
+      },
+      "global": {
+        "scaleSm": 13,
+        "scaleMd": 14,
+        "scaleLg": 15.5,
+        "scaleXl": 19,
+        "barWidth": 3,
+        "islandWidth": 3,
+        "barPadding": {
+          "top": 0.42,
+          "right": 0.25,
+          "bottom": 0.42,
+          "left": 0.25
+        },
+        "edgeBarPadding": {
+          "top": 1.2,
+          "right": 0,
+          "bottom": 1.2,
+          "left": 0
+        }
+      },
+      "appMenu": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.22,
+          "right": 0.2,
+          "bottom": 0.22,
+          "left": 0.2
+        },
+        "buttonWidth": 1.9,
+        "buttonHeight": 1.75,
+        "buttonRadius": 0.65,
+        "buttonPadding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "buttonMargin": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "iconSize": 1.42,
+        "iconPadding": {
+          "top": 0,
+          "right": 0.3,
+          "bottom": 0,
+          "left": 0
+        },
+        "iconMargin": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "workspaces": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.58,
+          "right": 0.28,
+          "bottom": 0.58,
+          "left": 0.16
+        },
+        "contentWidth": 2.18,
+        "contentPadding": {
+          "top": 0.22,
+          "right": 0,
+          "bottom": 0.22,
+          "left": 0
+        },
+        "buttonWidth": 2.18,
+        "buttonHeight": 1.18,
+        "indicatorWidth": 0.86
+      },
+      "tray": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.34,
+          "right": 0.24,
+          "bottom": 0.34,
+          "left": 0.1
+        },
+        "moduleWidth": 2.05,
+        "iconSize": 1.15,
+        "spacing": 0.26
+      },
+      "updates": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.34,
+          "right": 0.26,
+          "bottom": 0.34,
+          "left": 0.12
+        },
+        "buttonWidth": 2.05,
+        "buttonHeight": 2.35,
+        "buttonRadius": 0.72,
+        "iconSize": 1.6,
+        "countSize": 1.2,
+        "countMargin": {
+          "top": -0.12,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "music": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.42,
+          "right": 0.26,
+          "bottom": 0.42,
+          "left": 0.12
+        },
+        "moduleWidth": 2.8,
+        "buttonWidth": 2.45,
+        "buttonHeight": 2.75,
+        "buttonRadius": 0.78,
+        "visualizerWidth": 2.8
+      },
+      "connectivity": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.36,
+          "right": 0.19,
+          "bottom": 0.36,
+          "left": 0.19
+        },
+        "moduleWidth": 2.05,
+        "buttonWidth": 2.05,
+        "buttonHeight": 2.1,
+        "buttonRadius": 0.68,
+        "iconWidth": 2.05,
+        "iconHeight": 2.1,
+        "iconSize": 1.3,
+        "iconPadding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "iconMargin": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "weather": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.36,
+          "right": 0.19,
+          "bottom": 0.36,
+          "left": 0.19
+        },
+        "moduleWidth": 2.05,
+        "buttonWidth": 2.05,
+        "buttonHeight": 2.1,
+        "buttonRadius": 0.68,
+        "buttonPadding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "buttonMargin": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "contentPadding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "iconSize": 1.8,
+        "iconPadding": {
+          "top": 0,
+          "right": 0.35,
+          "bottom": 0,
+          "left": 0
+        },
+        "iconMargin": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "tempSize": 1,
+        "tempPadding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "tempMargin": {
+          "top": -0.18,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "popoverWidth": 13.6
+      },
+      "dials": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.42,
+          "right": 0.22,
+          "bottom": 0.42,
+          "left": 0.08
+        },
+        "batteryIslandWidth": 3,
+        "batteryIslandPadding": {
+          "top": 0.42,
+          "right": 0.22,
+          "bottom": 0.42,
+          "left": 0.08
+        },
+        "dialSize": 2.5,
+        "groupWidth": 2.5
+      },
+      "disk": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.42,
+          "right": 0.22,
+          "bottom": 0.42,
+          "left": 0.08
+        },
+        "moduleWidth": 2.5,
+        "dialSize": 2.5,
+        "popoverWidth": 14
+      },
+      "clock": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.34,
+          "right": 0.24,
+          "bottom": 0.34,
+          "left": 0.1
+        },
+        "wrapperWidth": 2.25,
+        "wrapperHeight": 2.1,
+        "labelWidth": 2.25,
+        "labelHeight": 2.1,
+        "labelSize": 1.12
+      },
+      "exit": {
+        "islandWidth": 3,
+        "islandPadding": {
+          "top": 0.34,
+          "right": 0.26,
+          "bottom": 0.34,
+          "left": 0.12
+        },
+        "buttonWidth": 2.05,
+        "buttonHeight": 2.1,
+        "buttonRadius": 0.72,
+        "iconSize": 1.4
+      }
+    }
+  }
+}

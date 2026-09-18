@@ -1,0 +1,3 @@
+# Runtime/user state that must survive HyprLazy updates.
+.config/ags/generated/bar-settings.json
+.config/ags/generated/launcher-favorites.json

@@ -1,0 +1,15 @@
+# HyprLazy Alacritty configuration
+
+[window]
+opacity = 0.8
+padding.x = 20
+padding.y = 20
+decorations = "Full"
+decorations_theme_variant = "Dark"
+
+[font]
+normal.family = "CaskaydiaCove Nerd Font"
+bold.family = "CaskaydiaCove Nerd Font Mono"
+italic.family = "CaskaydiaCove Nerd Font"
+bold_italic.family = "CaskaydiaCove Nerd Font"
+size = 16.0

@@ -1,0 +1,52 @@
+# HyprLazy Swaylock configuration
+# Runtime wallpaper, sizing, and Pywal colors are applied by ~/.config/ags/scripts/lock.sh.
+
+ignore-empty-password
+show-failed-attempts
+indicator-caps-lock
+indicator-idle-visible
+show-keyboard-layout
+
+font=JetBrainsMono Nerd Font
+font-size=40
+indicator-radius=190
+indicator-thickness=22
+scaling=fill
+
+# High-contrast fallback palette used when no Pywal cache is available.
+color=0b0b0f
+inside-color=101014e8
+inside-clear-color=101014e8
+inside-ver-color=101014e8
+inside-wrong-color=101014e8
+inside-caps-lock-color=101014e8
+
+# Keep the base ring slightly translucent so key press segments are obvious.
+ring-color=f0d6ad77
+ring-clear-color=ffe2a8ff
+ring-ver-color=d9c7ffff
+ring-wrong-color=ff6b81ff
+ring-caps-lock-color=ffe2a8ff
+key-hl-color=ffe2a8ff
+bs-hl-color=d9c7ffff
+caps-lock-key-hl-color=d9c7ffff
+caps-lock-bs-hl-color=ffe2a8ff
+
+# Center status text is intentionally fully opaque.
+text-color=ffffffff
+text-clear-color=ffe2a8ff
+text-ver-color=d9c7ffff
+text-wrong-color=ff8a9aff
+text-caps-lock-color=ffe2a8ff
+
+line-color=f0d6ad66
+line-clear-color=ffe2a8cc
+line-ver-color=d9c7ffcc
+line-wrong-color=ff6b81cc
+line-caps-lock-color=ffe2a8cc
+separator-color=101014aa
+
+# Keep keyboard-layout text visible while typing on upstream swaylock.
+layout-bg-color=10101400
+layout-border-color=10101400
+layout-text-color=ffffffff

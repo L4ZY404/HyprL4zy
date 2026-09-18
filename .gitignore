@@ -1,0 +1,62 @@
+# HyprLazy repository ignore rules
+
+# Machine-specific configuration
+home/.config/ags/local.json
+home/.config/hypr/local.conf
+!home/.config/ags/local.example.json
+!home/.config/hypr/local.example.conf
+
+# Runtime-generated AGS state
+home/.config/ags/wal.scss
+home/.config/ags/generated/bar-settings.scss
+home/.config/ags/generated/monitor-slots.json
+home/.config/ags/generated/settings-center.json
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Caches and runtime files
+**/.cache/
+**/__pycache__/
+*.pyc
+*.pyo
+*.log
+*.pid
+*.swp
+*.swo
+*~
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+coverage/
+
+# Backups and temporary files
+*.bak
+*.backup
+*.old
+*.orig
+backups/
+backup/
+tmp/
+temp/
+
+# Generated archives and checksums
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.sha256
+
+# Editor / OS metadata
+.idea/
+.vscode/
+*.code-workspace
+.DS_Store
+Thumbs.db
+desktop.ini

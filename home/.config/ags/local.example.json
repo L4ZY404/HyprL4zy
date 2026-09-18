@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "workspaceCount": 10,
+  "visualizerFps": 30,
+  "visualizerBatteryFps": 15,
+  "terminal": "",
+  "fileManager": "",
+  "browser": "",
+  "wallpaperDir": "",
+  "weather": {
+    "latitude": null,
+    "longitude": null,
+    "location": ""
+  },
+  "session": {
+    "lockSeconds": 1800,
+    "screenOffSeconds": 1830
+  }
+}

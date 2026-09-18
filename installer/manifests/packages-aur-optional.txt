@@ -1,0 +1,2 @@
+# Optional visual integration. Failure does not abort the installer.
+catppuccin-gtk-theme-mocha

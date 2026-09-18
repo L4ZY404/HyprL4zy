@@ -1,0 +1,6 @@
+# Required AUR packages.
+aylurs-gtk-shell-git
+libastal-meta
+swaylock-effects
+mpvpaper
+zsh-theme-powerlevel10k-git

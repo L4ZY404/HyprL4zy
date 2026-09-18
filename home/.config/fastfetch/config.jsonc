@@ -1,0 +1,115 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  // Keep the logo inline so the configuration stays self-contained and portable.
+  // ANSI bright magenta and bright yellow follow the terminal's active palette.
+  "logo": {
+    "type": "data",
+    "position": "top",
+    "source": "$1            ▀▄   ▄▀\n           ▄█▀███▀█▄\n          █▀███████▀█\n          █ █▀▀▀▀▀█ █\n             ▀▀ ▀▀\n\n$2   ██╗  ██╗ ██████╗ ██╗  ██╗\n   ██║  ██║██╔═████╗██║  ██║\n   ███████║██║██╔██║███████║\n   ╚════██║████╔╝██║╚════██║\n        ██║╚██████╔╝     ██║\n        ╚═╝ ╚═════╝      ╚═╝",
+    "padding": {
+      "top": 1,
+      "bottom": 1,
+      "left": 1,
+      "right": 0
+    },
+    "color": {
+      "1": "light_magenta",
+      "2": "light_yellow"
+    }
+  },
+  "display": {
+    "separator": "  →  ",
+    "showErrors": false,
+    "brightColor": true,
+    "color": {
+      "keys": "light_magenta",
+      "title": "light_yellow",
+      "output": "light_yellow",
+      "separator": "light_yellow"
+    },
+    "key": {
+      "type": "icon",
+      "width": 3,
+      "paddingLeft": 1,
+      "language": "en"
+    }
+  },
+  "modules": [
+    {
+      "type": "custom",
+      "format": "──────────────────────────────────",
+      "outputColor": "light_yellow"
+    },
+    {
+      "type": "custom",
+      "format": "Hardware Information",
+      "outputColor": "light_yellow"
+    },
+    {
+      "type": "cpu"
+    },
+    {
+      "type": "gpu"
+    },
+    {
+      "type": "memory"
+    },
+    {
+      "type": "display",
+      "format": "{width}x{height} @ {refresh-rate} Hz"
+    },
+    {
+      "type": "disk",
+      "folders": "/",
+      "format": "{size-used} / {size-total} ({size-percentage})"
+    },
+    {
+      "type": "battery"
+    },
+    {
+      "type": "custom",
+      "format": "──────────────────────────────────",
+      "outputColor": "light_yellow"
+    },
+    {
+      "type": "custom",
+      "format": "Software Information",
+      "outputColor": "light_yellow"
+    },
+    {
+      "type": "os"
+    },
+    {
+      "type": "kernel"
+    },
+    {
+      "type": "wm"
+    },
+    {
+      "type": "shell"
+    },
+    {
+      "type": "terminal"
+    },
+    {
+      "type": "terminalfont"
+    },
+    {
+      "type": "packages"
+    },
+    {
+      "type": "uptime"
+    },
+    {
+      "type": "custom",
+      "format": "──────────────────────────────────",
+      "outputColor": "light_yellow"
+    },
+    {
+      "type": "colors",
+      "symbol": "block",
+      "paddingLeft": 5,
+      "key": " "
+    }
+  ]
+}

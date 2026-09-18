@@ -1,0 +1,21 @@
+# User-facing programs shipped as the default HyprLazy software set.
+# Use --minimal to skip this manifest.
+firefox
+neovim
+nano
+code
+nemo
+gvfs
+gvfs-mtp
+ntfs-3g
+htop
+rofi
+ncmpcpp
+mpd
+vlc
+yt-dlp
+wdisplays
+gnome-disk-utility
+baobab
+qt6ct
+github-cli

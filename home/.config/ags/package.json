@@ -1,0 +1,10 @@
+{
+  "name": "hyprlazy-shell",
+  "version": "5.0.0-alpha.21",
+  "private": true,
+  "description": "HyprLazy beta shell built with AGS GTK4; alpha21 preserves the Bar Editor viewport across DnD reflow.",
+  "prettier": {
+    "semi": false,
+    "tabWidth": 2
+  }
+}
