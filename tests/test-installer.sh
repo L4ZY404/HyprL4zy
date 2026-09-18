@@ -9,6 +9,7 @@ trap 'rm -rf "$HOME"' EXIT
 
 source "$ROOT/installer/lib/common.sh"
 source "$ROOT/installer/modules/pacman.sh"
+source "$ROOT/installer/modules/packages.sh"
 source "$ROOT/installer/modules/sddm.sh"
 
 fail() { printf 'FAIL: %s\n' "$*" >&2; exit 1; }
@@ -51,7 +52,23 @@ grep -Fxq 'zsh-theme-powerlevel10k-git' "$ROOT/installer/manifests/packages-aur.
 grep -Fq '/usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' "$ROOT/home/.zshrc" || fail "Powerlevel10k source missing from .zshrc"
 pass "Powerlevel10k integration"
 
-# 5. pacman.conf patch must be idempotent and preserve custom repositories.
+# 5. Keep Astal minimal: AGS core + AstalTray only.
+grep -Fxq 'aylurs-gtk-shell-git' "$ROOT/installer/manifests/packages-aur.txt" || fail "AGS package missing"
+grep -Fxq 'libastal-tray-git' "$ROOT/installer/manifests/packages-aur.txt" || fail "AstalTray package missing"
+if grep -Fxq 'libastal-meta' "$ROOT/installer/manifests/packages-aur.txt"; then
+  fail "libastal-meta must not be installed"
+fi
+pass "minimal Astal dependency set"
+
+# 6. Pywal must come from AUR; Python remains an official runtime dependency.
+grep -Fxq 'python' "$ROOT/installer/manifests/packages-official.txt" || fail "python runtime missing"
+if grep -Fxq 'python-pywal' "$ROOT/installer/manifests/packages-official.txt"; then
+  fail "python-pywal must not be installed from pacman"
+fi
+grep -Fxq 'pywal-git' "$ROOT/installer/manifests/packages-aur.txt" || fail "pywal-git missing from AUR manifest"
+pass "Pywal AUR integration"
+
+# 7. pacman.conf patch must be idempotent and preserve custom repositories.
 sample="$HOME/pacman.conf"
 patched="$HOME/pacman.patched"
 patched_twice="$HOME/pacman.patched.twice"
@@ -74,65 +91,86 @@ grep -Fq '[custom-repo]' "$patched" || fail "custom repo was lost"
 grep -Fq 'Server = https://example.invalid/$arch' "$patched" || fail "custom repo server was lost"
 pass "pacman patch"
 
-# 6. No private home path should be present in publishable source.
+# 8. No private home path should be present in publishable source.
 private_home="/home/""l4zy"
 if grep -R -n -F "$private_home" "$ROOT" --exclude-dir=.git --exclude='test-installer.sh' >/dev/null 2>&1; then
   fail "private home path found"
 fi
 pass "portable paths"
 
-# 7. local machine state must not be committed.
+# 9. local machine state must not be committed.
 [[ ! -e "$ROOT/home/.config/ags/local.json" ]] || fail "local.json must not be committed"
 [[ ! -e "$ROOT/home/.config/hypr/local.conf" ]] || fail "local.conf must not be committed"
 [[ -e "$ROOT/home/.config/ags/local.example.json" ]] || fail "local.example.json missing"
 [[ -e "$ROOT/home/.config/hypr/local.example.conf" ]] || fail "local.example.conf missing"
 pass "local state policy"
 
-
-
-# 8. Optional SDDM integration must remain opt-in and portable.
+# 10. Optional SDDM integration must delegate to Dynamic Bubble's installer.
 grep -Fq -- '--with-sddm' "$ROOT/install.sh" || fail "--with-sddm flag missing"
 grep -Fq 'Install the optional HyprLazy SDDM theme' "$ROOT/installer/modules/sddm.sh" || fail "interactive SDDM prompt missing"
 grep -Fq 'https://github.com/L4ZY404/SDDM-THEME-Dynamic_bubble.git' "$ROOT/installer/modules/sddm.sh" || fail "Dynamic Bubble repository missing"
-grep -Fq '/var/cache/sddm-theme' "$ROOT/home/.config/ags/scripts/theme/sddm_sync.sh" || fail "SDDM Pywal cache path missing"
-if grep -Fq 'touch "$THEME_DIR/Main.qml"' "$ROOT/home/.config/ags/scripts/theme/sddm_sync.sh"; then
-  fail "runtime SDDM sync must not write into /usr/share"
+grep -Fq 'bash ./install.sh' "$ROOT/installer/modules/sddm.sh" || fail "Dynamic Bubble standalone installer is not used"
+if grep -Fq 'install_sddm_theme_files' "$ROOT/installer/modules/sddm.sh"; then
+  fail "HyprLazy must not duplicate Dynamic Bubble theme installation logic"
 fi
-pass "optional SDDM integration"
+pass "delegated optional SDDM integration"
 
-# 9. SDDM theme source detection should accept both repo-root and nested layouts.
-fake_repo="$HOME/fake-sddm-repo"
-mkdir -p "$fake_repo/Dynamic_bubble"
-: > "$fake_repo/Dynamic_bubble/Main.qml"
-[[ "$(find_sddm_theme_source "$fake_repo")" == "$fake_repo/Dynamic_bubble" ]] || fail "nested SDDM theme detection"
-rm -rf "$fake_repo"
-mkdir -p "$fake_repo"
-: > "$fake_repo/Main.qml"
-[[ "$(find_sddm_theme_source "$fake_repo")" == "$fake_repo" ]] || fail "root SDDM theme detection"
-pass "SDDM theme discovery"
+# 11. AUR installer must continue when yay reports failure after the package was installed.
+if ! (
+  MOCK_INSTALLED=0
+  package_installed() { [[ "$1" == demo-package && "$MOCK_INSTALLED" == 1 ]]; }
+  yay() { MOCK_INSTALLED=1; return 7; }
+  install_single_aur_package demo-package
+); then
+  fail "AUR installed-state verification did not tolerate a non-zero yay status"
+fi
+pass "AUR post-install status verification"
 
-# 10. Patching /etc/sddm.conf must preserve unrelated settings and be idempotent.
-sddm_sample="$HOME/sddm.conf"
-sddm_patched="$HOME/sddm.patched"
-sddm_twice="$HOME/sddm.patched.twice"
-cat > "$sddm_sample" <<'SDDM'
-[General]
-DisplayServer=x11
+# 12. A truly missing AUR package must still be reported as a failure.
+if (
+  package_installed() { return 1; }
+  yay() { return 9; }
+  install_single_aur_package missing-package
+); then
+  fail "missing AUR package was incorrectly accepted"
+fi
+pass "AUR missing-package detection"
 
-[Theme]
-Current=old-theme
-CursorTheme=breeze_cursors
+# 13. pacman bulk failures must be verified before aborting.
+if ! (
+  MOCK_INSTALLED=0
+  package_installed() { [[ "$MOCK_INSTALLED" == 1 ]]; }
+  sudo() { MOCK_INSTALLED=1; return 4; }
+  install_pacman_package_set "mock runtime" 1 demo-package
+); then
+  fail "pacman installed-state verification did not tolerate a non-zero status"
+fi
+pass "pacman post-install status verification"
 
-[Users]
-MaximumUid=60513
-SDDM
-render_sddm_main_config "$sddm_sample" "$sddm_patched"
-render_sddm_main_config "$sddm_patched" "$sddm_twice"
-cmp -s "$sddm_patched" "$sddm_twice" || fail "SDDM config patch is not idempotent"
-grep -Fxq 'Current=Dynamic_bubble' "$sddm_patched" || fail "SDDM theme was not selected"
-grep -Fxq 'DisplayServer=x11' "$sddm_patched" || fail "SDDM General settings were lost"
-grep -Fxq 'CursorTheme=breeze_cursors' "$sddm_patched" || fail "SDDM Theme settings were lost"
-grep -Fxq 'MaximumUid=60513' "$sddm_patched" || fail "SDDM Users settings were lost"
-pass "SDDM config patch"
+
+# 14. A non-zero yay status for one installed package must not stop later AUR packages.
+if ! (
+  mock_manifest="$HOME/mock-manifests"
+  mkdir -p "$mock_manifest"
+  printf 'first-package\nsecond-package\n' > "$mock_manifest/packages-aur.txt"
+  : > "$mock_manifest/packages-aur-optional.txt"
+  HYPRLAZY_MANIFEST_DIR="$mock_manifest"
+  MOCK_INSTALLED=""
+  MOCK_ATTEMPTS=""
+  package_installed() { [[ " $MOCK_INSTALLED " == *" $1 "* ]]; }
+  yay() {
+    local package="${@: -1}"
+    MOCK_ATTEMPTS+=" $package"
+    MOCK_INSTALLED+=" $package"
+    [[ "$package" == first-package ]] && return 7
+    return 0
+  }
+  install_aur_packages
+  [[ " $MOCK_ATTEMPTS " == *" first-package "* ]]
+  [[ " $MOCK_ATTEMPTS " == *" second-package "* ]]
+); then
+  fail "AUR package phase did not continue after a verified installed package returned non-zero"
+fi
+pass "AUR phase continuation"
 
 printf '\nAll installer tests passed.\n'

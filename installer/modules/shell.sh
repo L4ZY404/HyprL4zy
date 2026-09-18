@@ -33,8 +33,12 @@ set_default_shell() {
   fi
 
   if confirm "Set $zsh_path as the default shell for $USER?"; then
-    chsh -s "$zsh_path" "$USER"
-    ok "Default shell changed to Zsh."
+    if chsh -s "$zsh_path" "$USER"; then
+      ok "Default shell changed to Zsh."
+    else
+      warn "Could not change the default shell automatically; the rest of the installation will continue."
+      warn "You can retry later with: chsh -s $zsh_path"
+    fi
   else
     warn "Default shell unchanged. Run: chsh -s $zsh_path"
   fi

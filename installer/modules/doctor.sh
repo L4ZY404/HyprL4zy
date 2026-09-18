@@ -25,6 +25,15 @@ run_installer_doctor() {
     fi
   done
 
+  printf '\nAstal integration:\n'
+  if command -v gjs >/dev/null 2>&1 && \
+     gjs -c 'imports.gi.versions.AstalTray="0.1"; const AstalTray=imports.gi.AstalTray;' >/dev/null 2>&1; then
+    printf 'OK       AstalTray 0.1\n'
+  else
+    printf 'MISSING  AstalTray 0.1 (libastal-tray-git)\n'
+    failed=1
+  fi
+
   printf '\nZsh integration:\n'
   [[ -d "$HOME/.oh-my-zsh" ]] && printf 'OK       Oh My Zsh\n' || { printf 'MISSING  Oh My Zsh\n'; failed=1; }
   [[ -r /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme ]] && \
@@ -66,17 +75,17 @@ run_installer_doctor() {
   printf '\nOptional SDDM integration:\n'
   if [[ -f /usr/share/sddm/themes/Dynamic_bubble/Main.qml ]]; then
     printf 'OK       Dynamic Bubble theme\n'
-    if [[ -f /etc/sddm.conf.d/90-hyprlazy-theme.conf ]] && \
-       grep -Fxq 'Current=Dynamic_bubble' /etc/sddm.conf.d/90-hyprlazy-theme.conf 2>/dev/null; then
+    if { [[ -f /etc/sddm.conf.d/90-dynamic-bubble.conf ]] && \
+         grep -Fxq 'Current=Dynamic_bubble' /etc/sddm.conf.d/90-dynamic-bubble.conf 2>/dev/null; } || \
+       { [[ -f /etc/sddm.conf ]] && \
+         grep -Fxq 'Current=Dynamic_bubble' /etc/sddm.conf 2>/dev/null; }; then
       printf 'OK       SDDM theme selection\n'
     else
-      printf 'WARN     Dynamic Bubble is installed but not selected by HyprLazy config\n'
+      printf 'WARN     Dynamic Bubble is installed but its SDDM selection was not detected\n'
     fi
-    if [[ -w /var/cache/sddm-theme ]]; then
-      printf 'OK       Pywal sync cache\n'
-    else
-      printf 'WARN     /var/cache/sddm-theme is not writable by the current user\n'
-    fi
+    command -v dynamic-bubble-sync >/dev/null 2>&1 && \
+      printf 'OK       dynamic-bubble-sync\n' || \
+      printf 'WARN     dynamic-bubble-sync command is missing\n'
   else
     printf 'SKIPPED  Optional Dynamic Bubble SDDM theme is not installed\n'
   fi

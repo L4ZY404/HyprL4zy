@@ -102,22 +102,32 @@ restore_sddm_state() {
   local has_sddm_backup=0
 
   [[ -e "$backup/system/usr/share/sddm/themes/Dynamic_bubble" || \
+     -e "$backup/system/etc/sddm.conf.d/90-dynamic-bubble.conf" || \
      -e "$backup/system/etc/sddm.conf.d/90-hyprlazy-theme.conf" || \
      -e "$backup/system/etc/sddm.conf" || \
      -e "$backup/system/var/cache/sddm-theme" || \
+     -e "$backup/system/usr/local/bin/dynamic-bubble-sync" || \
      -f "$backup/metadata/sddm-theme.was-absent" || \
      -f "$backup/metadata/sddm-config.was-absent" || \
-     -f "$backup/metadata/sddm-cache.was-absent" ]] && has_sddm_backup=1
+     -f "$backup/metadata/sddm-legacy-config.was-absent" || \
+     -f "$backup/metadata/sddm-cache.was-absent" || \
+     -f "$backup/metadata/sddm-sync-bin.was-absent" || \
+     -f "$backup/metadata/sddm-main-config.was-absent" ]] && has_sddm_backup=1
 
   ((has_sddm_backup == 1)) || return 0
   confirm "Restore the SDDM theme/configuration state from this backup?" || return 0
 
   restore_sddm_path "$backup" "/usr/share/sddm/themes/Dynamic_bubble" "sddm-theme.was-absent"
-  restore_sddm_path "$backup" "/etc/sddm.conf.d/90-hyprlazy-theme.conf" "sddm-config.was-absent"
+  restore_sddm_path "$backup" "/etc/sddm.conf.d/90-dynamic-bubble.conf" "sddm-config.was-absent"
+  restore_sddm_path "$backup" "/etc/sddm.conf.d/90-hyprlazy-theme.conf" "sddm-legacy-config.was-absent"
+  restore_sddm_path "$backup" "/var/cache/sddm-theme" "sddm-cache.was-absent"
+  restore_sddm_path "$backup" "/usr/local/bin/dynamic-bubble-sync" "sddm-sync-bin.was-absent"
+
   if [[ -f "$backup/system/etc/sddm.conf" ]]; then
     sudo cp -a -- "$backup/system/etc/sddm.conf" /etc/sddm.conf
+  elif [[ -f "$backup/metadata/sddm-main-config.was-absent" ]]; then
+    sudo rm -f -- /etc/sddm.conf
   fi
-  restore_sddm_path "$backup" "/var/cache/sddm-theme" "sddm-cache.was-absent"
 
   if [[ -f "$backup/metadata/sddm-service.before" ]]; then
     case "$(<"$backup/metadata/sddm-service.before")" in
@@ -126,5 +136,6 @@ restore_sddm_state() {
     esac
   fi
 
+  systemctl --user daemon-reload >/dev/null 2>&1 || true
   ok "SDDM state restored."
 }
