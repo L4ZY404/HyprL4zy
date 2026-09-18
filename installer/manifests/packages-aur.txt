@@ -4,3 +4,4 @@ libastal-meta
 swaylock-effects
 mpvpaper
 zsh-theme-powerlevel10k-git
+pywal-git

@@ -21,7 +21,6 @@ zsh-syntax-highlighting
 lsd
 bat
 python
-python-pywal
 imagemagick
 jq
 ffmpeg
