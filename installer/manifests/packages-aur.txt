@@ -1,7 +1,8 @@
 # Required AUR packages.
-# AGS already pulls the Astal core libraries it needs; HyprLazy only adds
-# AstalTray for the StatusNotifierItem system tray.
-aylurs-gtk-shell-git
+# Prefer the stable AGS package for reproducibility. The installer accepts an
+# already-installed aylurs-gtk-shell-git provider instead of replacing it.
+# AGS pulls its core runtime; HyprLazy only adds AstalTray for the tray.
+aylurs-gtk-shell
 libastal-tray-git
 swaylock-effects
 mpvpaper

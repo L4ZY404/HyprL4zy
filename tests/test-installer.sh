@@ -53,7 +53,7 @@ grep -Fq '/usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' "$ROOT/hom
 pass "Powerlevel10k integration"
 
 # 5. Keep Astal minimal: AGS core + AstalTray only.
-grep -Fxq 'aylurs-gtk-shell-git' "$ROOT/installer/manifests/packages-aur.txt" || fail "AGS package missing"
+grep -Fxq 'aylurs-gtk-shell' "$ROOT/installer/manifests/packages-aur.txt" || fail "stable AGS package missing"
 grep -Fxq 'libastal-tray-git' "$ROOT/installer/manifests/packages-aur.txt" || fail "AstalTray package missing"
 if grep -Fxq 'libastal-meta' "$ROOT/installer/manifests/packages-aur.txt"; then
   fail "libastal-meta must not be installed"
@@ -172,5 +172,36 @@ if ! (
   fail "AUR package phase did not continue after a verified installed package returned non-zero"
 fi
 pass "AUR phase continuation"
+
+
+# 15. Stable AGS must satisfy the AGS requirement without invoking yay.
+if ! (
+  package_installed() { [[ "$1" == aylurs-gtk-shell ]]; }
+  yay() { return 99; }
+  install_single_aur_package aylurs-gtk-shell
+); then
+  fail "stable AGS did not satisfy the AGS provider requirement"
+fi
+pass "stable AGS provider detection"
+
+# 16. The -git AGS variant must also satisfy the stable manifest requirement.
+if ! (
+  package_installed() { [[ "$1" == aylurs-gtk-shell-git ]]; }
+  yay() { return 99; }
+  install_single_aur_package aylurs-gtk-shell
+); then
+  fail "AGS -git provider did not satisfy the stable AGS requirement"
+fi
+pass "AGS git provider detection"
+
+# 17. Stable AstalTray must satisfy the -git tray manifest requirement.
+if ! (
+  package_installed() { [[ "$1" == libastal-tray ]]; }
+  yay() { return 99; }
+  install_single_aur_package libastal-tray-git
+); then
+  fail "stable AstalTray did not satisfy the tray provider requirement"
+fi
+pass "AstalTray provider detection"
 
 printf '\nAll installer tests passed.\n'

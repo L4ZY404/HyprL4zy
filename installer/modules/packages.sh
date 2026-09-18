@@ -32,6 +32,57 @@ join_by() {
   done
 }
 
+
+ags_runtime_compatible() {
+  # Prefer package metadata when AGS comes from Arch/AUR. This avoids replacing
+  # the stable package with the conflicting -git variant.
+  if package_installed aylurs-gtk-shell || package_installed aylurs-gtk-shell-git; then
+    return 0
+  fi
+
+  command -v ags >/dev/null 2>&1 || return 1
+
+  # Accept a custom/source installation only when it reports AGS 3.x or newer.
+  local version major
+  version="$(ags --version 2>/dev/null | grep -Eo '[0-9]+(\.[0-9]+){1,2}' | head -n1 || true)"
+  [[ -n "$version" ]] || return 1
+  major="${version%%.*}"
+  [[ "$major" =~ ^[0-9]+$ ]] && ((major >= 3))
+}
+
+astal_tray_available() {
+  if package_installed libastal-tray || package_installed libastal-tray-git; then
+    return 0
+  fi
+
+  command -v gjs >/dev/null 2>&1 || return 1
+  gjs -c 'imports.gi.versions.AstalTray="0.1"; const AstalTray=imports.gi.AstalTray;' >/dev/null 2>&1
+}
+
+aur_requirement_satisfied() {
+  local package="$1"
+  case "$package" in
+    aylurs-gtk-shell|aylurs-gtk-shell-git)
+      ags_runtime_compatible
+      ;;
+    libastal-tray|libastal-tray-git)
+      astal_tray_available
+      ;;
+    *)
+      package_installed "$package"
+      ;;
+  esac
+}
+
+aur_requirement_label() {
+  local package="$1"
+  case "$package" in
+    aylurs-gtk-shell|aylurs-gtk-shell-git) printf '%s' 'AGS 3 runtime' ;;
+    libastal-tray|libastal-tray-git) printf '%s' 'AstalTray' ;;
+    *) printf '%s' "$package" ;;
+  esac
+}
+
 collect_missing_packages() {
   local output_name="$1"
   shift
@@ -189,26 +240,31 @@ install_single_aur_package() {
   local package="$1"
   shift
   local flags=("$@")
+  local label
+  label="$(aur_requirement_label "$package")"
 
-  if package_installed "$package"; then
-    ok "AUR package already installed: $package"
+  # AUR packages may have stable/-git alternatives that provide the same
+  # runtime. Do not ask yay to replace a working provider just because the
+  # manifest names a different variant.
+  if aur_requirement_satisfied "$package"; then
+    ok "Requirement already satisfied: $label"
     return 0
   fi
 
-  info "Installing AUR package: $package"
+  info "Installing AUR package: $package ($label)"
   local status=0
   yay -S --needed "${flags[@]}" "$package" || status=$?
 
-  if package_installed "$package"; then
+  if aur_requirement_satisfied "$package"; then
     if ((status != 0)); then
-      warn "yay returned status $status for $package, but pacman confirms it is installed; continuing."
+      warn "yay returned status $status for $package, but the required runtime is available; continuing."
     else
-      ok "Installed AUR package: $package"
+      ok "Installed requirement: $label"
     fi
     return 0
   fi
 
-  warn "AUR package failed and is still missing: $package (yay status: $status)"
+  warn "AUR requirement failed and is still missing: $label (requested package: $package, yay status: $status)"
   return 1
 }
 
@@ -278,7 +334,7 @@ print_package_plan() {
   printf '\nAUR packages missing:\n'
   count=0
   for package in "${aur[@]}"; do
-    if ! package_installed "$package"; then
+    if ! aur_requirement_satisfied "$package"; then
       printf '  %s\n' "$package"
       ((count += 1))
     fi
@@ -288,7 +344,7 @@ print_package_plan() {
   printf '\nOptional AUR packages missing:\n'
   count=0
   for package in "${aur_optional[@]}"; do
-    if ! package_installed "$package"; then
+    if ! aur_requirement_satisfied "$package"; then
       printf '  %s\n' "$package"
       ((count += 1))
     fi
