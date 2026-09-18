@@ -5,13 +5,34 @@
 
 A modular **Arch Linux + Hyprland** rice built with **AGS GTK4, GJS and Astal**, with Pywal integration, contextual widgets and a configurable vertical bar.
 
-<p align="center">
-  <a href="assets/screenshots/01.png"><img src="assets/screenshots/01.png" width="19%" alt="HyprL4zy screenshot 01"></a>
-  <a href="assets/screenshots/02.png"><img src="assets/screenshots/02.png" width="19%" alt="HyprL4zy screenshot 02"></a>
-  <a href="assets/screenshots/03.png"><img src="assets/screenshots/03.png" width="19%" alt="HyprL4zy screenshot 03"></a>
-  <a href="assets/screenshots/04.png"><img src="assets/screenshots/04.png" width="19%" alt="HyprL4zy screenshot 04"></a>
-  <a href="assets/screenshots/05.png"><img src="assets/screenshots/05.png" width="19%" alt="HyprL4zy screenshot 05"></a>
-</p>
+## Screenshots
+
+<div align="center">
+
+<a href="assets/screenshots/01.png">
+  <img src="assets/screenshots/01.png" width="90%" alt="HyprL4zy">
+</a>
+
+<br><br>
+
+<a href="assets/screenshots/02.png">
+  <img src="assets/screenshots/02.png" width="22%" alt="HyprL4zy Screenshot 2">
+</a>
+<a href="assets/screenshots/03.png">
+  <img src="assets/screenshots/03.png" width="22%" alt="HyprL4zy Screenshot 3">
+</a>
+<a href="assets/screenshots/04.png">
+  <img src="assets/screenshots/04.png" width="22%" alt="HyprL4zy Screenshot 4">
+</a>
+<a href="assets/screenshots/05.png">
+  <img src="assets/screenshots/05.png" width="22%" alt="HyprL4zy Screenshot 5">
+</a>
+
+<br>
+
+<sub>Click any screenshot to open it in full resolution.</sub>
+
+</div>
 
 ## Features
 
@@ -50,10 +71,6 @@ The installer can configure `pacman`, bootstrap `yay`, install Powerlevel10k and
 | `Super + R` | Restart AGS |
 | `Super + H` | Shortcuts |
 | `Super + P` | Power menu |
-
-## Local configuration
-
-Machine-specific files such as `local.json` and `local.conf` are intentionally kept outside the public configuration and preserved by updates.
 
 ## License
 
