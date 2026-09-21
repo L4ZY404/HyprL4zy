@@ -5,13 +5,48 @@
 
 A modular **Arch Linux + Hyprland** rice built with **Quickshell/QML**, Pywal colors, contextual modules, custom Studios and a fixed vertical island bar.
 
+<div align="center">
+
+# HyprL4zy
+
+<img src="assets/screenshots/main.png" width="100%" alt="HyprL4zy Desktop">
+
+<br><br>
+
+### Screenshots
+
 <p align="center">
-  <a href="assets/screenshots/01.png"><img src="assets/screenshots/01.png" width="19%" alt="HyprL4zy screenshot 01"></a>
-  <a href="assets/screenshots/02.png"><img src="assets/screenshots/02.png" width="19%" alt="HyprL4zy screenshot 02"></a>
-  <a href="assets/screenshots/03.png"><img src="assets/screenshots/03.png" width="19%" alt="HyprL4zy screenshot 03"></a>
-  <a href="assets/screenshots/04.png"><img src="assets/screenshots/04.png" width="19%" alt="HyprL4zy screenshot 04"></a>
-  <a href="assets/screenshots/05.png"><img src="assets/screenshots/05.png" width="19%" alt="HyprL4zy screenshot 05"></a>
+  <a href="assets/screenshots/01.png">
+    <img src="assets/screenshots/01.png" width="100%" alt="HyprL4zy">
+  </a>
 </p>
+
+<table>
+  <tr>
+    <td width="50%">
+      <a href="assets/screenshots/02.png">
+        <img src="assets/screenshots/02.png" width="100%" alt="HyprL4zy screenshot 02">
+      </a>
+    </td>
+    <td width="50%">
+      <a href="assets/screenshots/03.png">
+        <img src="assets/screenshots/03.png" width="100%" alt="HyprL4zy screenshot 03">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <a href="assets/screenshots/04.png">
+        <img src="assets/screenshots/04.png" width="100%" alt="HyprL4zy screenshot 04">
+      </a>
+    </td>
+    <td width="50%">
+      <a href="assets/screenshots/05.png">
+        <img src="assets/screenshots/05.png" width="100%" alt="HyprL4zy screenshot 05">
+      </a>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
