@@ -500,7 +500,7 @@ PanelWindow {
 
         EdgeIsland {
             id: mediaIsland
-            property bool compactRequested: mediaModule.playing
+            property bool compactRequested: mediaModule.available
             visible: compactRequested || contextExpanded || height > 0.5
             width: root.barWidth
             compactHeight: Math.max(root.unit * 0.88, mediaModule.implicitHeight)
