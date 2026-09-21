@@ -20,6 +20,7 @@ Item {
         return players.find(candidate => candidate.isPlaying) || players[0]
     }
     readonly property bool available: player !== null
+    readonly property bool playing: player !== null && player.isPlaying
     signal activated()
 
     readonly property var levels: CavaService.levels

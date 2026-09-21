@@ -34,6 +34,7 @@ Item {
     readonly property real rowGap: unit * 0.10
     readonly property real columnGap: unit * 0.11
     readonly property real compactExtent: unit * 0.86
+    readonly property real edgeRadius: unit * 0.28
     readonly property real actionColumnWidth: unit * 2.18
     readonly property real preferredWidth: panelPadding * 2 + actionColumnWidth * 2 + columnGap
     readonly property real preferredHeight: panelPadding * 2
@@ -236,21 +237,15 @@ Item {
         id: revealMask
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        width: root.horizontalExpanded ? root.width : Math.min(root.width, root.compactExtent)
+        // Reveal from the physical screen edge by growing the surface leftward
+        // instead of translating it from outside the PanelWindow. Translation
+        // was clipped by the window edge and made the free left side appear
+        // flat during entry/exit.
+        width: !root.presented
+            ? 0
+            : (root.horizontalExpanded ? root.width : Math.min(root.width, root.compactExtent))
         height: root.verticalExpanded ? root.height : Math.min(root.height, root.compactExtent)
         clip: true
-
-        transform: Translate {
-            x: root.presented ? 0 : root.compactExtent * 1.05
-
-            Behavior on x {
-                enabled: SettingsService.animations
-                NumberAnimation {
-                    duration: root.presented ? 190 : 155
-                    easing.type: root.presented ? Easing.OutCubic : Easing.InCubic
-                }
-            }
-        }
 
         Behavior on height {
             enabled: SettingsService.animations
@@ -263,16 +258,31 @@ Item {
         Behavior on width {
             enabled: SettingsService.animations
             NumberAnimation {
-                duration: root.horizontalExpanded ? 270 : 225
-                easing.type: Easing.OutCubic
+                duration: !root.presented
+                    ? 155
+                    : (root.horizontalExpanded ? 270 : (root.closing ? 225 : 190))
+                easing.type: root.presented ? Easing.OutCubic : Easing.InCubic
             }
         }
 
+        // Right-edge surface: the free (left) side stays rounded through the
+        // entire reveal, while the side physically touching the monitor edge is
+        // deliberately square. A small cap fills only the right corner arcs.
         Rectangle {
+            id: powerSurface
             anchors.fill: parent
-            radius: Math.min(root.unit * 0.28, Math.min(width, height) * 0.28)
+            radius: Math.min(root.edgeRadius, width / 2, height / 2)
             color: root.backgroundColor
             antialiasing: true
+        }
+
+        Rectangle {
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            width: Math.max(0, Math.min(root.edgeRadius * 1.08, revealMask.width - root.edgeRadius))
+            color: root.backgroundColor
+            antialiasing: false
         }
 
         Text {

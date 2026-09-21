@@ -30,9 +30,20 @@ Item {
     readonly property string sysfsStatus: HardwareService.battery.status
 
     readonly property bool batteryAvailable: nativeBatteryReady || sysfsAvailable
-    readonly property real batteryPercent: nativeBatteryReady
-        ? clampPercent(nativeBattery.percentage)
-        : clampPercent(sysfsPercent)
+    readonly property real displayPercent: displayBatteryReady ? devicePercent(displayDevice) : -1
+    readonly property real physicalPercent: physicalBatteryReady ? devicePercent(physicalBattery) : -1
+    readonly property real nativePercent: displayPercent > 0
+        ? displayPercent
+        : (physicalPercent > 0 ? physicalPercent : Math.max(displayPercent, physicalPercent))
+    // Some UPower/Quickshell combinations expose Percentage as 0..1, while
+    // others expose 0..100. devicePercent() accepts both and can derive the
+    // value from energy/capacity when Percentage is temporarily zero. sysfs
+    // remains the last-resort source on unusual laptop firmware.
+    readonly property real batteryPercent: nativePercent > 0
+        ? clampPercent(nativePercent)
+        : (sysfsAvailable && Number(sysfsPercent) > 0
+            ? clampPercent(sysfsPercent)
+            : clampPercent(nativePercent >= 0 ? nativePercent : sysfsPercent))
     readonly property bool charging: nativeBatteryReady
         ? (nativeBattery.state === UPowerDeviceState.Charging || nativeBattery.state === UPowerDeviceState.PendingCharge)
         : sysfsStatus.toLowerCase().indexOf("charging") >= 0 && sysfsStatus.toLowerCase().indexOf("discharging") < 0
@@ -53,6 +64,33 @@ Item {
     readonly property string batteryModel: physicalBatteryReady && physicalBattery.model
         ? physicalBattery.model
         : (nativeBatteryReady && nativeBattery.model ? nativeBattery.model : "")
+
+    function normalizeNativePercent(value) {
+        const number = Number(value)
+        if (!isFinite(number) || number < 0)
+            return -1
+        // Accept both common representations without assuming one backend.
+        return number <= 1.0001 ? number * 100 : number
+    }
+
+    function devicePercent(device) {
+        if (!device || !device.ready)
+            return -1
+
+        const reported = normalizeNativePercent(device.percentage)
+        if (reported > 0)
+            return reported
+
+        const energy = Number(device.energy)
+        const capacity = Number(device.energyCapacity)
+        if (isFinite(energy) && isFinite(capacity) && capacity > 0 && energy >= 0) {
+            const derived = 100 * energy / capacity
+            if (isFinite(derived) && derived >= 0)
+                return derived
+        }
+
+        return reported
+    }
 
     function clampPercent(value) {
         const number = Number(value)

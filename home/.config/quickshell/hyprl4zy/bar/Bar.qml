@@ -500,10 +500,13 @@ PanelWindow {
 
         EdgeIsland {
             id: mediaIsland
-            visible: true
+            property bool compactRequested: mediaModule.playing
+            visible: compactRequested || contextExpanded || height > 0.5
             width: root.barWidth
             compactHeight: Math.max(root.unit * 0.88, mediaModule.implicitHeight)
-            height: visible ? (contextExpanded ? contextTargetHeight : compactHeight) : 0
+            height: (compactRequested || contextExpanded)
+                ? (contextExpanded ? contextTargetHeight : compactHeight)
+                : 0
             backgroundColor: theme.backgroundCss
             accentColor: theme.accent
             cornerRadius: root.radius
@@ -516,6 +519,12 @@ PanelWindow {
                 anchors.centerIn: parent
                 width: parent.width
                 height: mediaIsland.compactHeight
+                opacity: mediaIsland.compactRequested || mediaIsland.contextExpanded ? 1 : 0
+
+                Behavior on opacity {
+                    enabled: SettingsService.animations
+                    NumberAnimation { duration: 125; easing.type: Easing.OutCubic }
+                }
 
                 MediaModule {
                     id: mediaModule
@@ -537,9 +546,15 @@ PanelWindow {
 
         EdgeIsland {
             id: updatesIsland
+            property bool compactRequested: updatesModule.checking
+                || updatesModule.updateCount > 0
+                || updatesModule.errorText.length > 0
+            visible: compactRequested || contextExpanded || height > 0.5
             width: root.barWidth
             compactHeight: Math.max(root.unit * 0.80, updatesModule.implicitHeight + root.unit * 0.06)
-            height: contextExpanded ? contextTargetHeight : compactHeight
+            height: (compactRequested || contextExpanded)
+                ? (contextExpanded ? contextTargetHeight : compactHeight)
+                : 0
             backgroundColor: theme.backgroundCss
             accentColor: theme.accent
             cornerRadius: root.radius
@@ -552,6 +567,12 @@ PanelWindow {
                 anchors.centerIn: parent
                 width: parent.width
                 height: updatesIsland.compactHeight
+                opacity: updatesIsland.compactRequested || updatesIsland.contextExpanded ? 1 : 0
+
+                Behavior on opacity {
+                    enabled: SettingsService.animations
+                    NumberAnimation { duration: 125; easing.type: Easing.OutCubic }
+                }
 
                 UpdatesModule {
                     id: updatesModule

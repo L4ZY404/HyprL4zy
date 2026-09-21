@@ -340,4 +340,56 @@ grep -Fq 'readonly property real iconBoost: 1.08' "$ROOT/home/.config/quickshell
   || fail "global icon boost missing"
 pass "global readability scaling"
 
+# 28. Accept both UPower percentage representations and normalize them to
+# the 0..100 range expected by MetricRing and BatteryPopover.
+grep -Fq 'return number <= 1.0001 ? number * 100 : number' "$ROOT/home/.config/quickshell/hyprl4zy/services/PowerService.qml" \
+  || fail "UPower percentage normalization is missing"
+grep -Fq 'function devicePercent(device)' "$ROOT/home/.config/quickshell/hyprl4zy/services/PowerService.qml" \
+  || fail "battery percentage energy/capacity fallback is missing"
+grep -Fq 'sysfsAvailable && Number(sysfsPercent) > 0' "$ROOT/home/.config/quickshell/hyprl4zy/services/PowerService.qml" \
+  || fail "battery percentage sysfs fallback is missing"
+pass "UPower percentage normalization"
+
+# 29. The Power / Session surface is attached to the physical right edge: the
+# right edge must stay square while the free left corners remain rounded.
+grep -Fq 'readonly property real edgeRadius: unit * 0.28' "$ROOT/home/.config/quickshell/hyprl4zy/popovers/PowerPopover.qml" \
+  || fail "power surface edge radius is not centralized"
+grep -Fq 'anchors.right: parent.right' "$ROOT/home/.config/quickshell/hyprl4zy/popovers/PowerPopover.qml" \
+  || fail "power surface right-edge cap is missing"
+grep -Fq 'revealMask.width - root.edgeRadius' "$ROOT/home/.config/quickshell/hyprl4zy/popovers/PowerPopover.qml" \
+  || fail "power surface right-edge flattening is missing"
+grep -Fq 'width: !root.presented' "$ROOT/home/.config/quickshell/hyprl4zy/popovers/PowerPopover.qml" \
+  || fail "power surface does not reveal from the right edge by width"
+if grep -Fq 'transform: Translate' "$ROOT/home/.config/quickshell/hyprl4zy/popovers/PowerPopover.qml"; then
+  fail "power surface still uses clipped off-window translation"
+fi
+pass "power menu edge geometry"
+
+
+# 30. Media/Cava should leave the bar layout when nothing is actively playing,
+# while retaining an animated collapse/reveal when playback changes.
+grep -Fq 'readonly property bool playing: player !== null && player.isPlaying' \
+  "$ROOT/home/.config/quickshell/hyprl4zy/modules/media/MediaModule.qml" \
+  || fail "MediaModule does not expose active playback state"
+grep -Fq 'property bool compactRequested: mediaModule.playing' \
+  "$ROOT/home/.config/quickshell/hyprl4zy/bar/Bar.qml" \
+  || fail "media island is not tied to active playback"
+grep -Fq 'opacity: mediaIsland.compactRequested || mediaIsland.contextExpanded ? 1 : 0' \
+  "$ROOT/home/.config/quickshell/hyprl4zy/bar/Bar.qml" \
+  || fail "media island animated fade is missing"
+pass "idle media island collapse"
+
+# 31. Updates should stay visible while checking, when updates exist, or on an
+# error; a successful zero-update result should animate out of the bar layout.
+grep -Fq 'property bool compactRequested: updatesModule.checking' \
+  "$ROOT/home/.config/quickshell/hyprl4zy/bar/Bar.qml" \
+  || fail "updates island visibility policy is missing"
+grep -Fq '|| updatesModule.updateCount > 0' \
+  "$ROOT/home/.config/quickshell/hyprl4zy/bar/Bar.qml" \
+  || fail "updates island does not remain visible for pending updates"
+grep -Fq 'opacity: updatesIsland.compactRequested || updatesIsland.contextExpanded ? 1 : 0' \
+  "$ROOT/home/.config/quickshell/hyprl4zy/bar/Bar.qml" \
+  || fail "updates island animated fade is missing"
+pass "zero-update island collapse"
+
 printf '\nAll installer tests passed.\n'
