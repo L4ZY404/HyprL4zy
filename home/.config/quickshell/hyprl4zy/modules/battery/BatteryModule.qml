@@ -24,7 +24,7 @@ Item {
         height: width
         unit: root.unit
         value: root.percent
-        label: root.charging ? "CHG" : "BAT"
+        label: ""
         suffix: "%"
         foregroundColor: root.foregroundColor
         mutedColor: root.mutedColor

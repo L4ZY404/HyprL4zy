@@ -1,0 +1,17 @@
+--- home/.config/quickshell/hyprl4zy/components/MetricRing.qml
++++ home/.config/quickshell/hyprl4zy/components/MetricRing.qml
+@@ -67,12 +67,14 @@ Item {
+             font.pixelSize: UiScale.text(root.unit * 0.182, root.unit)
+             font.weight: Font.Bold
+         }
++
+         Text {
+             anchors.horizontalCenter: parent.horizontalCenter
+             text: root.label
++            visible: root.label.length > 0
+             color: root.mutedColor
+             font.pixelSize: UiScale.text(root.unit * 0.112, root.unit)
+             font.weight: Font.DemiBold
+         }
+     }
+ }
