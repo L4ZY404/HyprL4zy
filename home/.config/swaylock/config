@@ -1,5 +1,5 @@
 # HyprLazy Swaylock configuration
-# Runtime wallpaper, sizing, and Pywal colors are applied by ~/.config/ags/scripts/lock.sh.
+# Runtime wallpaper, sizing, and Pywal colors are applied by ~/.config/hypr/scripts/lock.sh.
 
 ignore-empty-password
 show-failed-attempts

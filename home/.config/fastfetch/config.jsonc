@@ -106,10 +106,10 @@
       "outputColor": "light_yellow"
     },
     {
-      "type": "colors",
-      "symbol": "block",
-      "paddingLeft": 5,
-      "key": " "
+        "type": "colors",
+        "symbol": "block",
+        "paddingLeft": 5,
+        "key": " "
     }
   ]
 }

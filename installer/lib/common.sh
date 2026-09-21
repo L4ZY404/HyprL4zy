@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Shared helpers for the HyprLazy installer.
+# Shared helpers for the HyprL4zy installer.
 
 set -euo pipefail
 
@@ -12,6 +12,7 @@ HYPRLAZY_BACKUP_ROOT="$HYPRLAZY_STATE_DIR/backups"
 HYPRLAZY_CURRENT_BACKUP="${HYPRLAZY_CURRENT_BACKUP:-}"
 HYPRLAZY_ASSUME_YES="${HYPRLAZY_ASSUME_YES:-0}"
 HYPRLAZY_MINIMAL="${HYPRLAZY_MINIMAL:-0}"
+HYPRLAZY_INSTALL_MODE="${HYPRLAZY_INSTALL_MODE:-install}"
 
 if [[ -t 1 ]]; then
   _c_reset=$'\033[0m'
@@ -39,8 +40,15 @@ require_arch() {
   # shellcheck disable=SC1091
   source /etc/os-release
   [[ "${ID:-}" == "arch" || "${ID_LIKE:-}" == *arch* ]] || \
-    die "HyprLazy currently supports Arch Linux and Arch-based systems only."
+    die "HyprL4zy currently supports Arch Linux and Arch-based systems only."
   command -v pacman >/dev/null 2>&1 || die "pacman was not found."
+}
+
+require_sudo() {
+  command -v sudo >/dev/null 2>&1 || die "sudo is required for package and system changes."
+  if ! sudo -v; then
+    die "Could not obtain sudo privileges."
+  fi
 }
 
 confirm() {
@@ -74,6 +82,12 @@ ensure_state_dirs() {
   mkdir -p "$HYPRLAZY_STATE_DIR" "$HYPRLAZY_BACKUP_ROOT"
 }
 
+acquire_installer_lock() {
+  ensure_state_dirs
+  exec 199>"$HYPRLAZY_STATE_DIR/installer.lock"
+  flock -n 199 || die "Another HyprL4zy installer/update process is already running."
+}
+
 start_backup() {
   ensure_state_dirs
   if [[ -n "$HYPRLAZY_CURRENT_BACKUP" ]]; then
@@ -81,7 +95,7 @@ start_backup() {
   fi
   local stamp
   stamp="$(date '+%Y%m%d-%H%M%S')"
-  HYPRLAZY_CURRENT_BACKUP="$HYPRLAZY_BACKUP_ROOT/$stamp"
+  HYPRLAZY_CURRENT_BACKUP="$(mktemp -d "$HYPRLAZY_BACKUP_ROOT/${stamp}-XXXXXX")"
   mkdir -p "$HYPRLAZY_CURRENT_BACKUP/home" "$HYPRLAZY_CURRENT_BACKUP/system/etc" "$HYPRLAZY_CURRENT_BACKUP/metadata"
   if [[ -f "$HYPRLAZY_STATE_DIR/managed-home-files.txt" ]]; then
     cp -a "$HYPRLAZY_STATE_DIR/managed-home-files.txt" "$HYPRLAZY_CURRENT_BACKUP/metadata/managed-home-files.before.txt"
@@ -104,7 +118,7 @@ backup_home_path() {
 
 backup_system_file() {
   local source="$1"
-  [[ -e "$source" ]] || return 0
+  [[ -e "$source" || -L "$source" ]] || return 0
   start_backup
   local relative="${source#/}"
   local destination="$HYPRLAZY_CURRENT_BACKUP/system/$relative"
@@ -120,11 +134,21 @@ is_preserved_home_path() {
   read_manifest "$preserve_file" | grep -Fxq -- "$relative"
 }
 
-command_version() {
-  local command_name="$1"
-  if command -v "$command_name" >/dev/null 2>&1; then
-    printf '%s' "$(command -v "$command_name")"
+paths_equal() {
+  local source="$1" target="$2"
+  if [[ -L "$source" ]]; then
+    [[ -L "$target" ]] || return 1
+    [[ "$(readlink "$source")" == "$(readlink "$target")" ]]
+    return
+  fi
+  [[ -f "$source" && -f "$target" ]] || return 1
+  cmp -s -- "$source" "$target"
+}
+
+print_backup_result() {
+  if [[ -n "$HYPRLAZY_CURRENT_BACKUP" ]]; then
+    printf 'Backup: %s\n' "$HYPRLAZY_CURRENT_BACKUP"
   else
-    printf '%s' "missing"
+    printf 'Backup: not needed (no managed files were replaced).\n'
   fi
 }

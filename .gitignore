@@ -1,16 +1,10 @@
-# HyprLazy repository ignore rules
+# HyprL4zy repository ignore rules
 
-# Machine-specific configuration
-home/.config/ags/local.json
+# Machine-specific configuration / runtime preferences
 home/.config/hypr/local.conf
-!home/.config/ags/local.example.json
+home/.config/quickshell/hyprl4zy/settings.json
 !home/.config/hypr/local.example.conf
-
-# Runtime-generated AGS state
-home/.config/ags/wal.scss
-home/.config/ags/generated/bar-settings.scss
-home/.config/ags/generated/monitor-slots.json
-home/.config/ags/generated/settings-center.json
+!home/.config/quickshell/hyprl4zy/settings.example.json
 
 # Environment and secrets
 .env

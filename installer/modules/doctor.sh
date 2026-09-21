@@ -1,37 +1,91 @@
 #!/usr/bin/env bash
 
-# Installer-level health checks.
+# Installer-level health checks for the current Quickshell generation.
 
 set -euo pipefail
 
+check_command() {
+  local command_name="$1"
+  if command -v "$command_name" >/dev/null 2>&1; then
+    printf 'OK       %-24s %s\n' "$command_name" "$(command -v "$command_name")"
+    return 0
+  fi
+  printf 'MISSING  %s\n' "$command_name"
+  return 1
+}
+
 run_installer_doctor() {
-  section "HyprLazy doctor"
+  section "HyprL4zy doctor"
   local failed=0
 
+  printf 'Core commands:\n'
   local commands=(
-    hyprctl ags gjs sass zsh swaylock dunst
+    hyprctl qs paru python3 jq zsh kitty
     grim slurp wl-copy wl-paste cliphist
-    pactl playerctl cava brightnessctl bluetoothctl nmcli
-    awww wal ffmpeg mpvpaper magick jq checkupdates
+    cava brightnessctl awww wal ffmpeg mpvpaper
+    checkupdates notify-send
   )
-
   local command_name
   for command_name in "${commands[@]}"; do
-    if command -v "$command_name" >/dev/null 2>&1; then
-      printf 'OK       %-24s %s\n' "$command_name" "$(command -v "$command_name")"
+    check_command "$command_name" || failed=1
+  done
+
+  printf '\nQuickshell runtime:\n'
+  if command -v qs >/dev/null 2>&1; then
+    local qs_version
+    qs_version="$(qs --version 2>/dev/null | head -n1 || true)"
+    printf 'OK       %s\n' "${qs_version:-qs available}"
+  else
+    printf 'MISSING  Quickshell runtime\n'
+    failed=1
+  fi
+
+  printf '\nDesktop portals / policy agent:\n'
+  for package in xdg-desktop-portal-hyprland xdg-desktop-portal-gtk hyprpolkitagent; do
+    if package_installed "$package"; then
+      printf 'OK       %s\n' "$package"
     else
-      printf 'MISSING  %s\n' "$command_name"
+      printf 'MISSING  %s\n' "$package"
       failed=1
     fi
   done
 
-  printf '\nAstal integration:\n'
-  if command -v gjs >/dev/null 2>&1 && \
-     gjs -c 'imports.gi.versions.AstalTray="0.1"; const AstalTray=imports.gi.AstalTray;' >/dev/null 2>&1; then
-    printf 'OK       AstalTray 0.1\n'
+  printf '\nAudio / power services:\n'
+  if command -v wpctl >/dev/null 2>&1; then
+    printf 'OK       WirePlumber tools\n'
   else
-    printf 'MISSING  AstalTray 0.1 (libastal-tray-git)\n'
+    printf 'MISSING  wpctl (wireplumber)\n'
     failed=1
+  fi
+  if command -v upower >/dev/null 2>&1; then
+    printf 'OK       UPower client\n'
+  else
+    printf 'MISSING  upower\n'
+    failed=1
+  fi
+  if systemctl is-active --quiet power-profiles-daemon.service 2>/dev/null; then
+    printf 'OK       power-profiles-daemon.service\n'
+  elif systemctl is-active --quiet tlp.service 2>/dev/null || \
+       systemctl is-active --quiet auto-cpufreq.service 2>/dev/null || \
+       systemctl is-active --quiet tuned.service 2>/dev/null; then
+    printf 'OK       alternative power manager active\n'
+  else
+    printf 'WARN     no supported power-profile service is active\n'
+  fi
+
+  printf '\nNetwork services:\n'
+  if systemctl is-active --quiet NetworkManager.service 2>/dev/null; then
+    printf 'OK       NetworkManager.service\n'
+  elif systemctl is-active --quiet iwd.service 2>/dev/null; then
+    printf 'OK       iwd.service (fallback path)\n'
+  else
+    printf 'MISSING  NetworkManager or iwd service\n'
+    failed=1
+  fi
+  if systemctl is-active --quiet bluetooth.service 2>/dev/null; then
+    printf 'OK       bluetooth.service\n'
+  else
+    printf 'WARN     bluetooth.service is not active\n'
   fi
 
   printf '\nZsh integration:\n'
@@ -47,11 +101,14 @@ run_installer_doctor() {
     printf 'OK       Color + ILoveCandy + ParallelDownloads = 5\n'
   fi
 
-  printf '\nHyprLazy files:\n'
+  printf '\nHyprL4zy files:\n'
   local required_files=(
     "$HOME/.config/hypr/hyprland.conf"
-    "$HOME/.config/ags/app.ts"
-    "$HOME/.config/ags/local.json"
+    "$HOME/.config/hypr/local.conf"
+    "$HOME/.config/quickshell/hyprl4zy/shell.qml"
+    "$HOME/.config/quickshell/hyprl4zy/services/qmldir"
+    "$HOME/.config/quickshell/hyprl4zy/settings.json"
+    "$HOME/.config/quickshell/hyprl4zy/launcher.sh"
     "$HOME/.config/swaylock/config"
     "$HOME/.config/fastfetch/config.jsonc"
     "$HOME/.zshrc"
@@ -66,11 +123,11 @@ run_installer_doctor() {
     fi
   done
 
-  if [[ -x "$HOME/.config/ags/scripts/doctor.sh" ]]; then
-    printf '\nAGS dependency report:\n'
-    "$HOME/.config/ags/scripts/doctor.sh" || failed=1
+  local settings="$HOME/.config/quickshell/hyprl4zy/settings.json"
+  if [[ -f "$settings" && "$HOME" != '/home/l4zy' ]] && grep -Fq '/home/l4zy/' "$settings"; then
+    printf 'MISSING  portable settings migration (legacy /home/l4zy path remains)\n'
+    failed=1
   fi
-
 
   printf '\nOptional SDDM integration:\n'
   if [[ -f /usr/share/sddm/themes/Dynamic_bubble/Main.qml ]]; then

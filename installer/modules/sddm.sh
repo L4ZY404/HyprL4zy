@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
 # Optional Dynamic Bubble SDDM integration.
-# Dynamic Bubble owns its installation logic; HyprLazy only asks the user,
-# captures a rollback snapshot, clones the upstream repository and runs it.
+# Dynamic Bubble owns its installation logic; HyprL4zy only detects existing
+# installations, captures rollback state, and delegates explicit installs.
 
 set -euo pipefail
 
-HYPRLAZY_SDDM_CHOICE="${HYPRLAZY_SDDM_CHOICE:-ask}"
+HYPRLAZY_SDDM_CHOICE="${HYPRLAZY_SDDM_CHOICE:-auto}"
+HYPRLAZY_SDDM_EXPLICIT="${HYPRLAZY_SDDM_EXPLICIT:-0}"
 HYPRLAZY_SDDM_REPO="${HYPRLAZY_SDDM_REPO:-https://github.com/L4ZY404/SDDM-THEME-Dynamic_bubble.git}"
 HYPRLAZY_SDDM_REF="${HYPRLAZY_SDDM_REF:-}"
 HYPRLAZY_SDDM_THEME_NAME="Dynamic_bubble"
@@ -23,10 +24,16 @@ sddm_theme_installed() {
 
 resolve_sddm_choice() {
   case "$HYPRLAZY_SDDM_CHOICE" in
-    yes|no) return 0 ;;
-    ask) ;;
+    yes|no|keep) return 0 ;;
+    auto) ;;
     *) die "Invalid SDDM choice: $HYPRLAZY_SDDM_CHOICE" ;;
   esac
+
+  if sddm_theme_installed; then
+    HYPRLAZY_SDDM_CHOICE="keep"
+    export HYPRLAZY_SDDM_CHOICE
+    return 0
+  fi
 
   # Optional system components are never selected implicitly in unattended mode.
   if [[ ! -t 0 ]]; then
@@ -35,7 +42,7 @@ resolve_sddm_choice() {
     return 0
   fi
 
-  printf 'Install the optional HyprLazy SDDM theme (Dynamic Bubble)? [y/N] '
+  printf 'Install the optional HyprL4zy SDDM theme (Dynamic Bubble)? [y/N] '
   local answer=""
   read -r answer || true
   if [[ "$answer" =~ ^[Yy]([Ee][Ss])?$ ]]; then
@@ -49,27 +56,33 @@ resolve_sddm_choice() {
 print_sddm_plan() {
   printf '\nOptional SDDM integration:\n'
   case "$HYPRLAZY_SDDM_CHOICE" in
-    yes) printf '  clone Dynamic Bubble and run its standalone installer\n' ;;
+    yes) printf '  install/refresh Dynamic Bubble through its standalone installer\n' ;;
     no) printf '  skip SDDM integration\n' ;;
-    *) printf '  ask during install (default: no)\n' ;;
+    keep) printf '  existing Dynamic Bubble installation detected; leave it untouched\n' ;;
+    auto)
+      if sddm_theme_installed; then
+        printf '  existing Dynamic Bubble installation detected; leave it untouched\n'
+      else
+        printf '  ask during install/update (default: no)\n'
+      fi
+      ;;
   esac
   printf '  repository: %s\n' "$HYPRLAZY_SDDM_REPO"
   printf '  theme destination: %s\n' "$HYPRLAZY_SDDM_THEME_DIR"
 }
 
 backup_or_mark_system_path() {
-  local path="$1"
-  local absent_marker="$2"
+  local path="$1" absent_marker="$2"
   if [[ -e "$path" || -L "$path" ]]; then
     backup_system_file "$path"
   else
+    start_backup
     : > "$HYPRLAZY_CURRENT_BACKUP/metadata/$absent_marker"
   fi
 }
 
 backup_or_mark_home_path() {
-  local relative="$1"
-  local target="$HOME/$relative"
+  local relative="$1" target="$HOME/$relative"
   if [[ -e "$target" || -L "$target" ]]; then
     backup_home_path "$relative"
   else
@@ -104,21 +117,28 @@ backup_sddm_state() {
 }
 
 install_optional_sddm() {
-  [[ "$HYPRLAZY_SDDM_CHOICE" == yes ]] || {
-    info "Skipping optional SDDM integration."
-    return 0
-  }
+  case "$HYPRLAZY_SDDM_CHOICE" in
+    keep)
+      ok "Dynamic Bubble is already installed; leaving SDDM untouched. Use --with-sddm to explicitly refresh it."
+      return 0
+      ;;
+    no)
+      info "Skipping optional SDDM integration."
+      return 0
+      ;;
+    yes) ;;
+    *) die "SDDM choice was not resolved before installation." ;;
+  esac
 
   section "Optional SDDM"
   backup_sddm_state
 
   local checkout
   checkout="$(mktemp -d)"
-
   info "Fetching Dynamic Bubble from $HYPRLAZY_SDDM_REPO"
   if ! git clone --depth=1 "$HYPRLAZY_SDDM_REPO" "$checkout/theme"; then
     rm -rf "$checkout"
-    warn "Dynamic Bubble could not be cloned. SDDM is optional, so the HyprLazy installation will continue."
+    warn "Dynamic Bubble could not be cloned. SDDM is optional, so HyprL4zy will continue."
     return 0
   fi
 
@@ -126,14 +146,14 @@ install_optional_sddm() {
     if ! git -C "$checkout/theme" fetch --depth=1 origin "$HYPRLAZY_SDDM_REF" || \
        ! git -C "$checkout/theme" checkout --detach FETCH_HEAD; then
       rm -rf "$checkout"
-      warn "Dynamic Bubble ref '$HYPRLAZY_SDDM_REF' could not be checked out; skipping optional SDDM setup."
+      warn "Dynamic Bubble ref '$HYPRLAZY_SDDM_REF' could not be checked out; skipping SDDM setup."
       return 0
     fi
   fi
 
   if [[ ! -f "$checkout/theme/install.sh" ]]; then
     rm -rf "$checkout"
-    warn "Dynamic Bubble does not contain install.sh; skipping optional SDDM setup."
+    warn "Dynamic Bubble does not contain install.sh; skipping SDDM setup."
     return 0
   fi
 
@@ -143,11 +163,10 @@ install_optional_sddm() {
   info "Running Dynamic Bubble's standalone installer."
   if ! (cd "$checkout/theme" && bash ./install.sh); then
     rm -rf "$checkout"
-    warn "Dynamic Bubble's installer returned an error. The main HyprLazy installation will continue."
+    warn "Dynamic Bubble's installer returned an error. HyprL4zy will continue."
     warn "A pre-install SDDM snapshot is available in: $HYPRLAZY_CURRENT_BACKUP"
     return 0
   fi
-
   rm -rf "$checkout"
 
   if ! sddm_theme_installed; then
@@ -155,6 +174,7 @@ install_optional_sddm() {
     return 0
   fi
 
+  ensure_state_dirs
   printf '%s\n' "$commit" > "$HYPRLAZY_STATE_DIR/sddm-theme-commit"
-  ok "Dynamic Bubble installed through its own installer."
+  ok "Dynamic Bubble installed/refreshed through its own installer."
 }

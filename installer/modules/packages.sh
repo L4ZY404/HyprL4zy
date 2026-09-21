@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
-# Package installation and yay bootstrap.
-# Package-manager commands are always verified against pacman's installed
-# database before the installer decides whether a reported failure is fatal.
+# Package installation and mandatory paru bootstrap.
+# Every package-manager command is followed by installed-state verification.
 
 set -euo pipefail
 
@@ -12,7 +11,7 @@ pacman_flags() {
   fi
 }
 
-yay_flags() {
+paru_flags() {
   if [[ "$HYPRLAZY_ASSUME_YES" == 1 ]]; then
     printf '%s\n' --noconfirm
   fi
@@ -23,50 +22,48 @@ join_by() {
   shift || true
   local first=1 value
   for value in "$@"; do
-    if ((first)); then
-      first=0
-    else
-      printf '%s' "$separator"
-    fi
+    if ((first)); then first=0; else printf '%s' "$separator"; fi
     printf '%s' "$value"
   done
 }
 
-
-ags_runtime_compatible() {
-  # Prefer package metadata when AGS comes from Arch/AUR. This avoids replacing
-  # the stable package with the conflicting -git variant.
-  if package_installed aylurs-gtk-shell || package_installed aylurs-gtk-shell-git; then
-    return 0
-  fi
-
-  command -v ags >/dev/null 2>&1 || return 1
-
-  # Accept a custom/source installation only when it reports AGS 3.x or newer.
-  local version major
-  version="$(ags --version 2>/dev/null | grep -Eo '[0-9]+(\.[0-9]+){1,2}' | head -n1 || true)"
-  [[ -n "$version" ]] || return 1
-  major="${version%%.*}"
-  [[ "$major" =~ ^[0-9]+$ ]] && ((major >= 3))
-}
-
-astal_tray_available() {
-  if package_installed libastal-tray || package_installed libastal-tray-git; then
-    return 0
-  fi
-
-  command -v gjs >/dev/null 2>&1 || return 1
-  gjs -c 'imports.gi.versions.AstalTray="0.1"; const AstalTray=imports.gi.AstalTray;' >/dev/null 2>&1
+package_requirement_satisfied() {
+  local package="$1"
+  case "$package" in
+    quickshell)
+      package_installed quickshell || package_installed quickshell-git || command -v qs >/dev/null 2>&1
+      ;;
+    awww)
+      package_installed awww || command -v awww >/dev/null 2>&1
+      ;;
+    iwd)
+      package_installed iwd || command -v iwctl >/dev/null 2>&1
+      ;;
+    wireplumber)
+      package_installed wireplumber || command -v wpctl >/dev/null 2>&1
+      ;;
+    *)
+      package_installed "$package"
+      ;;
+  esac
 }
 
 aur_requirement_satisfied() {
   local package="$1"
   case "$package" in
-    aylurs-gtk-shell|aylurs-gtk-shell-git)
-      ags_runtime_compatible
+    mpvpaper|mpvpaper-git)
+      package_installed mpvpaper || package_installed mpvpaper-git || command -v mpvpaper >/dev/null 2>&1
       ;;
-    libastal-tray|libastal-tray-git)
-      astal_tray_available
+    swaylock-effects|swaylock-effects-git|swaylock-effects-improved-git)
+      package_installed swaylock-effects || package_installed swaylock-effects-git || \
+        package_installed swaylock-effects-improved-git || command -v swaylock >/dev/null 2>&1
+      ;;
+    zsh-theme-powerlevel10k-git|zsh-theme-powerlevel10k)
+      package_installed zsh-theme-powerlevel10k-git || package_installed zsh-theme-powerlevel10k || \
+        [[ -r /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme ]]
+      ;;
+    pywal-git|python-pywal)
+      package_installed pywal-git || package_installed python-pywal || command -v wal >/dev/null 2>&1
       ;;
     *)
       package_installed "$package"
@@ -77,8 +74,10 @@ aur_requirement_satisfied() {
 aur_requirement_label() {
   local package="$1"
   case "$package" in
-    aylurs-gtk-shell|aylurs-gtk-shell-git) printf '%s' 'AGS 3 runtime' ;;
-    libastal-tray|libastal-tray-git) printf '%s' 'AstalTray' ;;
+    mpvpaper|mpvpaper-git) printf '%s' 'mpvpaper runtime' ;;
+    swaylock-effects*) printf '%s' 'swaylock runtime' ;;
+    zsh-theme-powerlevel10k*) printf '%s' 'Powerlevel10k' ;;
+    pywal-git|python-pywal) printf '%s' 'Pywal (wal)' ;;
     *) printf '%s' "$package" ;;
   esac
 }
@@ -88,20 +87,41 @@ collect_missing_packages() {
   shift
   local -n output_ref="$output_name"
   output_ref=()
-
   local package
   for package in "$@"; do
-    package_installed "$package" || output_ref+=("$package")
+    package_requirement_satisfied "$package" || output_ref+=("$package")
   done
 }
 
+pacman_work_needed() {
+  local packages=() programs=() missing=()
+  array_from_manifest "$HYPRLAZY_MANIFEST_DIR/packages-official.txt" packages
+  collect_missing_packages missing "${packages[@]}"
+  ((${#missing[@]})) && return 0
+
+  if [[ "$HYPRLAZY_INSTALL_MODE" != update && "$HYPRLAZY_MINIMAL" != 1 ]]; then
+    array_from_manifest "$HYPRLAZY_MANIFEST_DIR/packages-programs.txt" programs
+    collect_missing_packages missing "${programs[@]}"
+    ((${#missing[@]})) && return 0
+  fi
+
+  return 1
+}
+
 install_bootstrap_packages() {
+  local mode="${1:-install}"
   section "Bootstrap packages"
+
+  if [[ "$mode" == update ]] && ! pacman_work_needed; then
+    ok "No new pacman packages are required; skipping the system upgrade transaction."
+    return 0
+  fi
+
   local flags=()
   mapfile -t flags < <(pacman_flags)
 
   if ! sudo pacman -Syu --needed "${flags[@]}" base-devel git curl ca-certificates; then
-    die "The system upgrade/bootstrap transaction failed. Fix pacman first, then rerun the installer; --needed will skip completed work."
+    die "The system upgrade/bootstrap transaction failed. Fix pacman first, then rerun the installer; completed work will be detected automatically."
   fi
 
   local missing=()
@@ -128,27 +148,23 @@ install_pacman_package_set() {
     return 0
   fi
 
-  info "Installing $label (${#missing[@]} package(s))."
-
-  # A single bulk transaction is fastest. If pacman returns a non-zero status,
-  # verify the actual installed state before retrying only the missing packages.
+  info "Installing $label (${#missing[@]} package(s)): $(join_by ', ' "${missing[@]}")"
   if ! sudo pacman -S --needed "${flags[@]}" "${missing[@]}"; then
     collect_missing_packages missing "${packages[@]}"
     if ((${#missing[@]} == 0)); then
-      warn "pacman returned a non-zero status for $label, but every requested package is installed; continuing."
+      warn "pacman returned a non-zero status for $label, but every requested runtime is available; continuing."
       return 0
     fi
 
-    warn "Bulk installation for $label did not complete. Retrying the remaining packages one by one."
-    local retry_failures=()
-    local package
+    warn "Bulk installation for $label did not complete. Retrying only the remaining packages."
+    local retry_failures=() package
     for package in "${missing[@]}"; do
       info "Retrying package: $package"
       if sudo pacman -S --needed "${flags[@]}" "$package"; then
         continue
       fi
-      if package_installed "$package"; then
-        warn "pacman reported a failure for $package, but it is installed; continuing."
+      if package_requirement_satisfied "$package"; then
+        warn "pacman reported a failure for $package, but its runtime is available; continuing."
       else
         retry_failures+=("$package")
         warn "Package is still missing: $package"
@@ -186,35 +202,37 @@ install_official_packages() {
     die "Required Arch packages are missing. Review the warnings above and rerun the installer after resolving them."
   fi
 
-  if [[ "$HYPRLAZY_MINIMAL" != 1 ]]; then
+  if [[ "$HYPRLAZY_INSTALL_MODE" != update && "$HYPRLAZY_MINIMAL" != 1 ]]; then
     local programs=()
     array_from_manifest "$HYPRLAZY_MANIFEST_DIR/packages-programs.txt" programs
-    # User-facing applications should never prevent the rice itself from being
-    # installed when a mirror/package is temporarily unavailable.
     install_pacman_package_set "default user programs" 0 "${programs[@]}" || true
+  elif [[ "$HYPRLAZY_INSTALL_MODE" == update ]]; then
+    info "Update mode: preserving the user's optional program set."
   fi
 }
 
-install_yay() {
-  if command -v yay >/dev/null 2>&1; then
-    ok "yay is already installed."
+install_paru() {
+  if command -v paru >/dev/null 2>&1; then
+    ok "paru is already installed."
     return 0
   fi
 
-  section "yay"
-  info "yay was not found; bootstrapping it from the AUR as the current user."
+  section "paru"
+  info "paru was not found; bootstrapping it from the AUR as the current user."
 
   local build_root
   build_root="$(mktemp -d)"
+  trap 'rm -rf -- "$build_root"' RETURN
 
-  if ! git clone --depth=1 https://aur.archlinux.org/yay.git "$build_root/yay"; then
+  if ! git clone --depth=1 https://aur.archlinux.org/paru.git "$build_root/paru"; then
     rm -rf "$build_root"
-    die "Could not clone yay from the AUR. Check your network connection and rerun the installer."
+    trap - RETURN
+    die "Could not clone paru from the AUR. Check your network connection and rerun the installer."
   fi
 
   local makepkg_status=0
   (
-    cd "$build_root/yay"
+    cd "$build_root/paru"
     if [[ "$HYPRLAZY_ASSUME_YES" == 1 ]]; then
       makepkg -si --needed --noconfirm
     else
@@ -223,17 +241,18 @@ install_yay() {
   ) || makepkg_status=$?
 
   rm -rf "$build_root"
+  trap - RETURN
 
-  if command -v yay >/dev/null 2>&1; then
+  if command -v paru >/dev/null 2>&1; then
     if ((makepkg_status != 0)); then
-      warn "makepkg returned status $makepkg_status, but yay is installed; continuing."
+      warn "makepkg returned status $makepkg_status, but paru is installed; continuing."
     else
-      ok "yay installed."
+      ok "paru installed."
     fi
     return 0
   fi
 
-  die "yay installation did not complete (makepkg status: $makepkg_status)."
+  die "paru installation did not complete (makepkg status: $makepkg_status)."
 }
 
 install_single_aur_package() {
@@ -243,9 +262,6 @@ install_single_aur_package() {
   local label
   label="$(aur_requirement_label "$package")"
 
-  # AUR packages may have stable/-git alternatives that provide the same
-  # runtime. Do not ask yay to replace a working provider just because the
-  # manifest names a different variant.
   if aur_requirement_satisfied "$package"; then
     ok "Requirement already satisfied: $label"
     return 0
@@ -253,18 +269,18 @@ install_single_aur_package() {
 
   info "Installing AUR package: $package ($label)"
   local status=0
-  yay -S --needed "${flags[@]}" "$package" || status=$?
+  paru -S --needed "${flags[@]}" "$package" || status=$?
 
   if aur_requirement_satisfied "$package"; then
     if ((status != 0)); then
-      warn "yay returned status $status for $package, but the required runtime is available; continuing."
+      warn "paru returned status $status for $package, but the required runtime is available; continuing."
     else
       ok "Installed requirement: $label"
     fi
     return 0
   fi
 
-  warn "AUR requirement failed and is still missing: $label (requested package: $package, yay status: $status)"
+  warn "AUR requirement failed and is still missing: $label (requested package: $package, paru status: $status)"
   return 1
 }
 
@@ -273,12 +289,9 @@ install_aur_packages() {
   local packages=()
   array_from_manifest "$HYPRLAZY_MANIFEST_DIR/packages-aur.txt" packages
   local flags=()
-  mapfile -t flags < <(yay_flags)
+  mapfile -t flags < <(paru_flags)
 
-  # Install required AUR packages independently. One broken AUR build should
-  # not prevent the installer from attempting the remaining dependencies.
-  local failures=()
-  local package
+  local failures=() package
   for package in "${packages[@]}"; do
     if ! install_single_aur_package "$package" "${flags[@]}"; then
       failures+=("$package")
@@ -286,18 +299,19 @@ install_aur_packages() {
   done
 
   if ((${#failures[@]})); then
-    die "Required AUR packages could not be installed: $(join_by ', ' "${failures[@]}"). The other packages were still attempted; fix these builds and rerun the installer."
+    die "Required AUR packages could not be installed: $(join_by ', ' "${failures[@]}"). Fix these builds and rerun the installer; already completed work will be skipped."
   fi
-  ok "Required AUR package set installed."
+  ok "Required AUR package set is ready."
 
   local optional=()
   array_from_manifest "$HYPRLAZY_MANIFEST_DIR/packages-aur-optional.txt" optional
-  if ((${#optional[@]})); then
-    info "Installing optional visual packages. Failures here will not abort HyprLazy."
+  if [[ "$HYPRLAZY_INSTALL_MODE" != update ]] && ((${#optional[@]})); then
+    info "Installing optional visual packages. Failures here will not abort HyprL4zy."
     for package in "${optional[@]}"; do
-      install_single_aur_package "$package" "${flags[@]}" || \
-        warn "Optional AUR package skipped: $package"
+      install_single_aur_package "$package" "${flags[@]}" || warn "Optional AUR package skipped: $package"
     done
+  elif [[ "$HYPRLAZY_INSTALL_MODE" == update && ${#optional[@]} -gt 0 ]]; then
+    info "Update mode: preserving optional AUR packages as-is."
   fi
 }
 
@@ -308,14 +322,17 @@ print_package_plan() {
   array_from_manifest "$HYPRLAZY_MANIFEST_DIR/packages-aur.txt" aur
   array_from_manifest "$HYPRLAZY_MANIFEST_DIR/packages-aur-optional.txt" aur_optional
 
-  printf 'Official packages missing:\n'
-  local package
-  local count=0
+  printf 'AUR helper:\n'
+  if command -v paru >/dev/null 2>&1; then
+    printf '  paru (installed)\n'
+  else
+    printf '  paru (will be bootstrapped)\n'
+  fi
+
+  printf '\nOfficial runtime requirements missing:\n'
+  local package count=0
   for package in "${official[@]}"; do
-    if ! package_installed "$package"; then
-      printf '  %s\n' "$package"
-      ((count += 1))
-    fi
+    if ! package_requirement_satisfied "$package"; then printf '  %s\n' "$package"; ((count += 1)); fi
   done
   ((count > 0)) || printf '  none\n'
 
@@ -323,31 +340,22 @@ print_package_plan() {
     printf '\nProgram packages missing:\n'
     count=0
     for package in "${programs[@]}"; do
-      if ! package_installed "$package"; then
-        printf '  %s\n' "$package"
-        ((count += 1))
-      fi
+      if ! package_requirement_satisfied "$package"; then printf '  %s\n' "$package"; ((count += 1)); fi
     done
     ((count > 0)) || printf '  none\n'
   fi
 
-  printf '\nAUR packages missing:\n'
+  printf '\nAUR requirements missing:\n'
   count=0
   for package in "${aur[@]}"; do
-    if ! aur_requirement_satisfied "$package"; then
-      printf '  %s\n' "$package"
-      ((count += 1))
-    fi
+    if ! aur_requirement_satisfied "$package"; then printf '  %s\n' "$package"; ((count += 1)); fi
   done
   ((count > 0)) || printf '  none\n'
 
   printf '\nOptional AUR packages missing:\n'
   count=0
   for package in "${aur_optional[@]}"; do
-    if ! aur_requirement_satisfied "$package"; then
-      printf '  %s\n' "$package"
-      ((count += 1))
-    fi
+    if ! aur_requirement_satisfied "$package"; then printf '  %s\n' "$package"; ((count += 1)); fi
   done
   ((count > 0)) || printf '  none\n'
 }

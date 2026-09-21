@@ -1,18 +1,26 @@
-# HyprLazy required packages from the official Arch repositories.
-# Keep this list focused on runtime dependencies used by the rice.
+# HyprL4zy required packages from the official Arch repositories.
+# Keep this list focused on runtime dependencies used by the Quickshell rice.
 base-devel
 git
 curl
 ca-certificates
 bash
 coreutils
+findutils
+grep
+gawk
+sed
 util-linux
-iproute2
+procps-ng
 xdg-utils
 xdg-user-dirs
 hyprland
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+hyprpolkitagent
+quickshell
 alacritty
-dunst
+kitty
 libnotify
 fastfetch
 zsh
@@ -26,22 +34,13 @@ jq
 ffmpeg
 mpv
 awww
-socat
-dart-sass
-gjs
-gtk4
-gtk4-layer-shell
-gobject-introspection
-npm
-typescript
 networkmanager
-nm-connection-editor
-iw
+iwd
 bluez
 bluez-utils
-blueman
-pavucontrol
-playerctl
+pipewire
+wireplumber
+upower
 cava
 brightnessctl
 power-profiles-daemon

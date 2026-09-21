@@ -1,10 +1,6 @@
 # Required AUR packages.
-# Prefer the stable AGS package for reproducibility. The installer accepts an
-# already-installed aylurs-gtk-shell-git provider instead of replacing it.
-# AGS pulls its core runtime; HyprLazy only adds AstalTray for the tray.
-aylurs-gtk-shell
-libastal-tray-git
-swaylock-effects
+# Quickshell itself is now in the official Arch repositories.
 mpvpaper
+swaylock-effects
 zsh-theme-powerlevel10k-git
 pywal-git

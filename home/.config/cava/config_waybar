@@ -1,0 +1,12 @@
+[general]
+framerate = 60
+bars = 10 
+sleep_timer = 2
+
+[output]
+method = raw
+raw_target = /dev/stdout
+data_format = ascii
+ascii_max_range = 7
+bar_delimiter = 0
+

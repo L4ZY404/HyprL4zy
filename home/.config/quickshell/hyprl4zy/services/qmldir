@@ -1,0 +1,17 @@
+singleton AudioService 1.0 AudioService.qml
+singleton CavaService 1.0 CavaService.qml
+singleton ContextState 1.0 ContextState.qml
+singleton UpdatesService 1.0 UpdatesService.qml
+singleton WorkspaceState 1.0 WorkspaceState.qml
+singleton SettingsService 1.0 SettingsService.qml
+singleton PaletteService 1.0 PaletteService.qml
+singleton ShellControl 1.0 ShellControl.qml
+singleton SystemService 1.0 SystemService.qml
+singleton WeatherService 1.0 WeatherService.qml
+
+singleton IwdWifiService 1.0 IwdWifiService.qml
+singleton PowerService 1.0 PowerService.qml
+singleton WallpaperService 1.0 WallpaperService.qml
+singleton NotificationService 1.0 NotificationService.qml
+singleton UiScale 1.0 UiScale.qml
+singleton HardwareService 1.0 HardwareService.qml
