@@ -29,7 +29,7 @@ Item {
     readonly property int bluetoothConnectedCount: Bluetooth.devices.values.filter(device => device.connected).length
 
     readonly property real rowHeight: unit * 0.47
-    readonly property real glyphSize: unit * 0.36
+    readonly property real glyphSize: UiScale.icon(unit * 0.36)
     readonly property real gap: unit * 0.035
 
     implicitHeight: rowHeight * 2 + gap

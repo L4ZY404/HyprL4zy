@@ -35,7 +35,7 @@ Item {
 
             StatusGlyph {
                 anchors.centerIn: parent
-                width: root.unit * 0.25
+                width: UiScale.icon(root.unit * 0.25)
                 height: width
                 kind: "updates"
                 color: root.checking

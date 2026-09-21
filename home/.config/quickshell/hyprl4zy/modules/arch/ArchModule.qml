@@ -1,5 +1,6 @@
 import QtQuick
 import "../../components"
+import "../../services"
 
 Item {
     id: root
@@ -12,7 +13,7 @@ Item {
 
     ArchMark {
         anchors.centerIn: parent
-        width: root.unit * 0.37
+        width: UiScale.icon(root.unit * 0.37)
         height: width
         color: root.accentColor
     }

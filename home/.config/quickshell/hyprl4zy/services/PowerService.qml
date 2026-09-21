@@ -7,30 +7,59 @@ Item {
     id: root
 
     readonly property var displayDevice: UPower.displayDevice
-    readonly property bool nativeBatteryReady: displayDevice && displayDevice.ready && displayDevice.isLaptopBattery && displayDevice.isPresent
+    readonly property var physicalBattery: {
+        const devices = UPower.devices && UPower.devices.values ? UPower.devices.values : []
+        for (let i = 0; i < devices.length; ++i) {
+            const device = devices[i]
+            if (device && device.ready && device.isLaptopBattery && device.isPresent)
+                return device
+        }
+        return null
+    }
+    readonly property bool physicalBatteryReady: physicalBattery !== null
+    // displayDevice is an aggregate UPower device, so it is not guaranteed to
+    // advertise itself as a physical laptop battery. It is still the preferred
+    // source for aggregate percentage/time whenever a physical battery exists.
+    readonly property bool displayBatteryReady: displayDevice && displayDevice.ready
+        && (physicalBatteryReady || displayDevice.isLaptopBattery)
+    readonly property var nativeBattery: displayBatteryReady ? displayDevice : physicalBattery
+    readonly property bool nativeBatteryReady: nativeBattery !== null
 
     readonly property bool sysfsAvailable: HardwareService.battery.available
     readonly property real sysfsPercent: HardwareService.battery.percent
     readonly property string sysfsStatus: HardwareService.battery.status
 
     readonly property bool batteryAvailable: nativeBatteryReady || sysfsAvailable
-    readonly property real batteryPercent: nativeBatteryReady ? displayDevice.percentage : sysfsPercent
+    readonly property real batteryPercent: nativeBatteryReady
+        ? clampPercent(nativeBattery.percentage)
+        : clampPercent(sysfsPercent)
     readonly property bool charging: nativeBatteryReady
-        ? (displayDevice.state === UPowerDeviceState.Charging || displayDevice.state === UPowerDeviceState.PendingCharge)
+        ? (nativeBattery.state === UPowerDeviceState.Charging || nativeBattery.state === UPowerDeviceState.PendingCharge)
         : sysfsStatus.toLowerCase().indexOf("charging") >= 0 && sysfsStatus.toLowerCase().indexOf("discharging") < 0
     readonly property bool fullyCharged: nativeBatteryReady
-        ? displayDevice.state === UPowerDeviceState.FullyCharged
+        ? nativeBattery.state === UPowerDeviceState.FullyCharged
         : sysfsStatus.toLowerCase().indexOf("full") >= 0
     readonly property bool onBattery: nativeBatteryReady ? UPower.onBattery : (batteryAvailable && !charging && !fullyCharged)
-    readonly property string batteryState: nativeBatteryReady ? prettyEnum(UPowerDeviceState.toString(displayDevice.state)) : sysfsStatus
-    readonly property real batteryHealth: nativeBatteryReady && displayDevice.healthSupported ? displayDevice.healthPercentage : -1
-    readonly property real batteryRate: nativeBatteryReady ? Math.abs(displayDevice.changeRate) : 0
-    readonly property real batteryEnergy: nativeBatteryReady ? displayDevice.energy : 0
-    readonly property real batteryCapacity: nativeBatteryReady ? displayDevice.energyCapacity : 0
+    readonly property string batteryState: nativeBatteryReady ? prettyEnum(UPowerDeviceState.toString(nativeBattery.state)) : sysfsStatus
+    readonly property real batteryHealth: physicalBatteryReady && physicalBattery.healthSupported
+        ? physicalBattery.healthPercentage
+        : (nativeBatteryReady && nativeBattery.healthSupported ? nativeBattery.healthPercentage : -1)
+    readonly property real batteryRate: nativeBatteryReady ? Math.abs(nativeBattery.changeRate) : 0
+    readonly property real batteryEnergy: nativeBatteryReady ? nativeBattery.energy : 0
+    readonly property real batteryCapacity: nativeBatteryReady ? nativeBattery.energyCapacity : 0
     readonly property real timeRemaining: nativeBatteryReady
-        ? (charging ? displayDevice.timeToFull : displayDevice.timeToEmpty)
+        ? (charging ? nativeBattery.timeToFull : nativeBattery.timeToEmpty)
         : 0
-    readonly property string batteryModel: nativeBatteryReady && displayDevice.model ? displayDevice.model : ""
+    readonly property string batteryModel: physicalBatteryReady && physicalBattery.model
+        ? physicalBattery.model
+        : (nativeBatteryReady && nativeBattery.model ? nativeBattery.model : "")
+
+    function clampPercent(value) {
+        const number = Number(value)
+        if (!isFinite(number))
+            return 0
+        return Math.max(0, Math.min(100, number))
+    }
 
     readonly property int profile: PowerProfiles.profile
     readonly property string profileName: profileLabel(profile)

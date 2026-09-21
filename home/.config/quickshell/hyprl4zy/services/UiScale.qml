@@ -2,6 +2,11 @@ pragma Singleton
 import QtQuick
 
 QtObject {
+    // Global readability boosts. These scale glyphs/text without changing the
+    // shell's base unit, panel geometry or bar width.
+    readonly property real textBoost: 1.06
+    readonly property real iconBoost: 1.08
+
     // Screen dimensions are Qt logical pixels; never multiply by devicePixelRatio.
     // Use the short edge for portrait displays and cap growth on large desktops.
     function forScreen(screen) {
@@ -34,6 +39,10 @@ QtObject {
         else
             scaled = px * 1.08
 
-        return Math.max(readableFloor, scaled)
+        return Math.max(readableFloor, scaled) * textBoost
+    }
+
+    function icon(size) {
+        return Math.max(1, (Number(size) || 1) * iconBoost)
     }
 }

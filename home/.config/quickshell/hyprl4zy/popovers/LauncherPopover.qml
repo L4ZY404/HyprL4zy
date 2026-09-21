@@ -420,7 +420,7 @@ Item {
                                 Image {
                                     id: appIcon
                                     anchors.centerIn: parent
-                                    width: parent.width * 0.72
+                                    width: parent.width * 0.78
                                     height: width
                                     source: tileCell.modelData.icon ? Quickshell.iconPath(tileCell.modelData.icon, true) : ""
                                     fillMode: Image.PreserveAspectFit

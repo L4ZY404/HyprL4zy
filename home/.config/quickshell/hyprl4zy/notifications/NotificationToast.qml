@@ -162,7 +162,7 @@ Item {
                     Image {
                         id: iconImage
                         anchors.centerIn: parent
-                        width: parent.width * (root.displayEntry && root.displayEntry.isMedia ? 0.46 : 0.68)
+                        width: parent.width * (root.displayEntry && root.displayEntry.isMedia ? 0.50 : 0.74)
                         height: width
                         source: mediaArt.visible ? "" : root.iconSource()
                         fillMode: Image.PreserveAspectFit

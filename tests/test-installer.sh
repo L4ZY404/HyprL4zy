@@ -316,4 +316,28 @@ if "$ROOT/install.sh" help --definitely-not-a-real-option >/dev/null 2>&1; then
 fi
 pass "unknown option validation"
 
+# 25. Wallpaper catalog scans must not synchronously decode video previews.
+wall_dir="$HOME/wallpaper-scan-test"
+mkdir -p "$wall_dir"
+printf 'not-a-real-video' > "$wall_dir/demo.mp4"
+scan_output="$(timeout 3 bash "$ROOT/home/.config/quickshell/hyprl4zy/scripts/wallpaper-control.sh" scan "$wall_dir")" \
+  || fail "wallpaper catalog scan blocked on video preview generation"
+printf '%s\n' "$scan_output" | grep -Fq $'ENTRY\tvideo\t' || fail "video was not returned by wallpaper catalog scan"
+pass "non-blocking wallpaper catalog"
+
+# 26. Battery service must select physical UPower devices instead of requiring
+# the aggregate display device itself to be flagged as a laptop battery.
+grep -Fq 'UPower.devices && UPower.devices.values' "$ROOT/home/.config/quickshell/hyprl4zy/services/PowerService.qml" \
+  || fail "PowerService does not inspect physical UPower devices"
+grep -Fq 'physicalBatteryReady || displayDevice.isLaptopBattery' "$ROOT/home/.config/quickshell/hyprl4zy/services/PowerService.qml" \
+  || fail "PowerService aggregate battery fallback missing"
+pass "portable UPower battery detection"
+
+# 27. Global text/icon readability boosts must stay centralized.
+grep -Fq 'readonly property real textBoost: 1.06' "$ROOT/home/.config/quickshell/hyprl4zy/services/UiScale.qml" \
+  || fail "global text boost missing"
+grep -Fq 'readonly property real iconBoost: 1.08' "$ROOT/home/.config/quickshell/hyprl4zy/services/UiScale.qml" \
+  || fail "global icon boost missing"
+pass "global readability scaling"
+
 printf '\nAll installer tests passed.\n'

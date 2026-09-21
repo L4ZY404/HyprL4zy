@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Services.SystemTray
+import "../../services"
 
 Item {
     id: root
@@ -13,7 +14,7 @@ Item {
     readonly property int itemCount: SystemTray.items.values.length
     readonly property int columns: 2
     readonly property int rowCount: Math.ceil(itemCount / columns)
-    readonly property real iconSize: unit * 0.27
+    readonly property real iconSize: UiScale.icon(unit * 0.27)
     readonly property real cellHeight: unit * 0.43
     readonly property real columnGap: unit * 0.035
     readonly property real rowGap: unit * 0.035

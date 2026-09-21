@@ -17,6 +17,7 @@ Item {
     property var entries: []
     property string pendingWallpaper: ""
     property string paletteStatus: ""
+    property string lastPreviewWarmSignature: ""
 
     readonly property string defaultDirectory: (Quickshell.env("HOME") || "") + "/Pictures/Wallpapers"
     readonly property string directory: normalizeDirectory(SettingsService.wallpaperDirectory)
@@ -45,6 +46,30 @@ Item {
             }
         }
         return path
+    }
+
+
+    function missingVideoSignature(values) {
+        const paths = []
+        const source = values || []
+        for (let i = 0; i < source.length; ++i) {
+            const value = source[i]
+            if (value && value.kind === "video" && !String(value.preview || "").length)
+                paths.push(String(value.path || ""))
+        }
+        paths.sort()
+        return paths.join("\n")
+    }
+
+    function maybeWarmVideoPreviews() {
+        if (!ffmpegAvailable || previewWarmProcess.running)
+            return
+        const signature = missingVideoSignature(entries)
+        if (!signature.length || signature === lastPreviewWarmSignature)
+            return
+        lastPreviewWarmSignature = signature
+        previewWarmProcess.command = ["bash", Quickshell.shellPath("scripts/wallpaper-control.sh"), "warm-previews", directory]
+        previewWarmProcess.running = true
     }
 
     function setDirectory(value) {
@@ -132,6 +157,7 @@ Item {
             root.pywalAvailable = nextPywal
             root.ffmpegAvailable = nextFfmpeg
             root.mpvpaperAvailable = nextMpvpaper
+            root.maybeWarmVideoPreviews()
         }
     }
 
@@ -160,6 +186,18 @@ Item {
             const images = values.filter(value => value.kind === "image").length
             const videos = values.length - images
             root.statusText = values.length + " wallpapers · " + images + " images · " + videos + " videos"
+            root.maybeWarmVideoPreviews()
+        }
+    }
+
+    Process {
+        id: previewWarmProcess
+        command: []
+        onExited: (exitCode, exitStatus) => {
+            // The catalog is already visible. Refresh once when background
+            // thumbnail generation finishes so video placeholders become images.
+            if (exitStatus === 0 && exitCode === 0)
+                root.refresh()
         }
     }
 

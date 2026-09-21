@@ -39,7 +39,7 @@ Item {
 
         WeatherGlyph {
             anchors.horizontalCenter: parent.horizontalCenter
-            width: root.unit * 0.50
+            width: UiScale.icon(root.unit * 0.50)
             height: width
             weatherCode: root.weatherCode
             color: root.available ? root.accentColor : root.mutedColor

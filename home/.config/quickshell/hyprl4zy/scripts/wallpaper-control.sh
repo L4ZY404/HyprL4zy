@@ -428,19 +428,36 @@ refresh_wal() {
     return 0
 }
 
-generate_video_thumb() {
+video_thumb_path() {
     local file="$1"
-    command -v ffmpeg >/dev/null 2>&1 || return 0
-    local stamp key thumb
+    local stamp key
     stamp="$(stat -c '%Y:%s' "$file" 2>/dev/null || printf '0:0')"
     key="$(printf '%s|%s' "$file" "$stamp" | sha256sum | awk '{print $1}')"
-    thumb="$thumb_dir/$key.jpg"
-    if [[ ! -s "$thumb" ]]; then
-        timeout 25 ffmpeg -threads 1 -y -ss 00:00:01 -i "$file" \
-            -frames:v 1 -vf 'scale=960:540:force_original_aspect_ratio=increase,crop=960:540' \
-            -q:v 3 "$thumb" >/dev/null 2>&1 || rm -f "$thumb"
+    printf '%s/%s.jpg' "$thumb_dir" "$key"
+}
+
+generate_video_thumb() {
+    local file="$1"
+    command -v ffmpeg >/dev/null 2>&1 || return 1
+    local thumb tmp
+    thumb="$(video_thumb_path "$file")"
+    [[ -s "$thumb" ]] && { printf '%s' "$thumb"; return 0; }
+
+    # Thumbnail generation is intentionally bounded and is never performed by
+    # the catalog scan itself. This prevents a folder with many videos from
+    # keeping Wallpaper Studio empty for minutes.
+    tmp="${thumb}.tmp.jpg"
+    rm -f "$tmp"
+    if timeout 10 ffmpeg -threads 1 -y -ss 00:00:01 -i "$file" \
+        -map 0:v:0 -frames:v 1 \
+        -vf 'scale=960:540:force_original_aspect_ratio=increase,crop=960:540' \
+        -q:v 3 "$tmp" >/dev/null 2>&1 && [[ -s "$tmp" ]]; then
+        mv -f "$tmp" "$thumb"
+        printf '%s' "$thumb"
+        return 0
     fi
-    [[ -s "$thumb" ]] && printf '%s' "$thumb"
+    rm -f "$tmp"
+    return 1
 }
 
 scan_directory() {
@@ -458,7 +475,8 @@ scan_directory() {
         [[ "$kind" != "unknown" ]] || continue
         preview="$file"
         if [[ "$kind" == "video" ]]; then
-            preview="$(generate_video_thumb "$file")"
+            preview="$(video_thumb_path "$file")"
+            [[ -s "$preview" ]] || preview=""
         fi
         printf 'ENTRY\t%s\t%s\t%s\n' "$kind" "$file" "$preview"
     done < <(
@@ -467,6 +485,19 @@ scan_directory() {
             -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.webm' \
         \) -printf '%T@\t%p\n' 2>/dev/null | sort -nr
     )
+}
+
+warm_video_previews() {
+    local dir
+    dir="$(normalize_user_path "$1")"
+    [[ -d "$dir" ]] || return 2
+    command -v ffmpeg >/dev/null 2>&1 || return 0
+
+    # Run outside the catalog scan. Wallpaper Studio can render the complete
+    # list immediately using placeholders while these previews are prepared.
+    while IFS= read -r -d '' file; do
+        generate_video_thumb "$file" >/dev/null 2>&1 || true
+    done < <(find "$dir" -maxdepth 3 -type f \( -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.webm' \) -print0 2>/dev/null)
 }
 
 prepare_current_video_handoff() {
@@ -608,6 +639,10 @@ case "$command_name" in
         [[ -n "$arg" ]] || { printf 'Usage: %s scan DIRECTORY\n' "$0" >&2; exit 2; }
         scan_directory "$arg"
         ;;
+    warm-previews)
+        [[ -n "$arg" ]] || { printf 'Usage: %s warm-previews DIRECTORY\n' "$0" >&2; exit 2; }
+        warm_video_previews "$arg"
+        ;;
     open-folder)
         [[ -n "$arg" ]] || { printf 'Usage: %s open-folder DIRECTORY\n' "$0" >&2; exit 2; }
         arg="$(normalize_user_path "$arg")"
@@ -623,7 +658,7 @@ case "$command_name" in
         apply_wallpaper "$arg"
         ;;
     *)
-        printf 'Usage: %s [status|scan DIRECTORY|open-folder DIRECTORY|apply FILE]\n' "$0" >&2
+        printf 'Usage: %s [status|scan DIRECTORY|warm-previews DIRECTORY|open-folder DIRECTORY|apply FILE]\n' "$0" >&2
         exit 2
         ;;
 esac

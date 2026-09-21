@@ -21,10 +21,10 @@ Item {
     readonly property real tileGap: unit * 0.09
     readonly property real tileVerticalPadding: unit * 0.14
     readonly property real contentGap: unit * 0.075
-    readonly property real appSize: unit * 0.38
-    readonly property real appSlotHeight: unit * 0.39
-    readonly property real monitorSize: unit * 0.25
-    readonly property real monitorSlotHeight: unit * 0.25
+    readonly property real appSize: UiScale.icon(unit * 0.38)
+    readonly property real appSlotHeight: unit * 0.42
+    readonly property real monitorSize: UiScale.icon(unit * 0.25)
+    readonly property real monitorSlotHeight: unit * 0.28
     readonly property real minimumTileHeight: unit * 0.76
     readonly property int maxDisplayedApps: 4
     readonly property var localMonitor: Hyprland.monitorFor(targetScreen)

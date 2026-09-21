@@ -15,7 +15,7 @@ Item {
     readonly property bool charging: PowerService.charging
     readonly property real percent: PowerService.batteryPercent
 
-    readonly property real ringSize: unit * 0.62
+    readonly property real ringSize: unit * 0.78
     implicitHeight: ringSize + unit * 0.08
 
     MetricRing {
