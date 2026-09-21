@@ -97,9 +97,7 @@ Item {
 
     function prepareOpen() {
         morph.prepareOpen()
-        directoryInput.text = SettingsService.wallpaperDirectory.length > 0
-            ? SettingsService.wallpaperDirectory
-            : WallpaperService.defaultDirectory
+        directoryInput.text = WallpaperService.directory
         WallpaperService.refreshBackend()
         WallpaperService.refresh()
     }
@@ -233,7 +231,7 @@ Item {
                     font.pixelSize: UiScale.text(root.unit * 0.13, root.unit)
                     clip: true
                     onAccepted: {
-                        SettingsService.wallpaperDirectory = text.trim()
+                        text = WallpaperService.setDirectory(text)
                         WallpaperService.refresh()
                     }
                 }
@@ -267,7 +265,7 @@ Item {
                 text: WallpaperService.scanning ? "…" : "Refresh"
                 enabled: !WallpaperService.scanning && !WallpaperService.applying
                 onClicked: {
-                    SettingsService.wallpaperDirectory = directoryInput.text.trim()
+                    directoryInput.text = WallpaperService.setDirectory(directoryInput.text)
                     WallpaperService.refresh()
                 }
             }

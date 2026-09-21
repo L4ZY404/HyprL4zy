@@ -13,6 +13,45 @@ current_frame="$cache_home/current_wallpaper.png"
 current_video_frame_path="$state_home/hyprl4zy/current-video-frame.path"
 mkdir -p "$thumb_dir" "$palette_frame_dir" "$state_home/hyprl4zy"
 
+normalize_user_path() {
+    local value="${1:-}"
+
+    # Accept the common forms users paste into Wallpaper Studio. Shell tilde
+    # expansion does not happen after a value has already been stored in a
+    # variable, so normalize it explicitly here.
+    case "$value" in
+        '~') value="$HOME" ;;
+        '~/'*) value="$HOME/${value#\~/}" ;;
+    esac
+
+    value="${value//\$\{HOME\}/$HOME}"
+    value="${value//\$HOME/$HOME}"
+
+    if [[ "$value" == file://* ]]; then
+        if command -v python3 >/dev/null 2>&1; then
+            value="$(python3 - "$value" <<'PYURI'
+import sys
+from urllib.parse import unquote, urlparse
+uri = sys.argv[1]
+parsed = urlparse(uri)
+print(unquote(parsed.path))
+PYURI
+)"
+        else
+            value="${value#file://}"
+            value="${value//%20/ }"
+        fi
+    fi
+
+    [[ -n "$value" ]] || value="$HOME/Pictures/Wallpapers"
+
+    if [[ "$value" != /* ]]; then
+        value="$PWD/$value"
+    fi
+
+    realpath -m -- "$value" 2>/dev/null || printf '%s\n' "$value"
+}
+
 backend() {
     if command -v awww >/dev/null 2>&1; then
         printf '%s\n' "awww"
@@ -405,7 +444,8 @@ generate_video_thumb() {
 }
 
 scan_directory() {
-    local dir="$1"
+    local dir
+    dir="$(normalize_user_path "$1")"
     [[ -d "$dir" ]] || {
         printf 'Wallpaper directory does not exist: %s\n' "$dir" >&2
         return 2
@@ -467,7 +507,8 @@ prepare_current_video_handoff() {
 }
 
 apply_wallpaper() {
-    local target="$1"
+    local target
+    target="$(normalize_user_path "$1")"
     [[ -f "$target" ]] || {
         printf 'Wallpaper does not exist: %s\n' "$target" >&2
         return 2
@@ -569,6 +610,8 @@ case "$command_name" in
         ;;
     open-folder)
         [[ -n "$arg" ]] || { printf 'Usage: %s open-folder DIRECTORY\n' "$0" >&2; exit 2; }
+        arg="$(normalize_user_path "$arg")"
+        mkdir -p -- "$arg"
         if command -v nemo >/dev/null 2>&1; then
             nohup nemo "$arg" >/dev/null 2>&1 &
         else

@@ -19,12 +19,39 @@ Item {
     property string paletteStatus: ""
 
     readonly property string defaultDirectory: (Quickshell.env("HOME") || "") + "/Pictures/Wallpapers"
-    readonly property string directory: SettingsService.wallpaperDirectory.trim().length > 0
-        ? SettingsService.wallpaperDirectory.trim()
-        : defaultDirectory
+    readonly property string directory: normalizeDirectory(SettingsService.wallpaperDirectory)
     readonly property bool imageAvailable: backend !== "none" && backend !== "unknown"
     readonly property bool videoAvailable: ffmpegAvailable && (mpvpaperAvailable || imageAvailable)
     readonly property bool available: imageAvailable || videoAvailable
+
+    function normalizeDirectory(value) {
+        const home = Quickshell.env("HOME") || ""
+        let path = String(value || "").trim()
+        if (!path.length)
+            return defaultDirectory
+        if (path === "~")
+            return home
+        if (path.indexOf("~/") === 0)
+            return home + path.substring(1)
+        if (path.indexOf("$HOME/") === 0)
+            return home + path.substring(5)
+        if (path.indexOf("${HOME}/") === 0)
+            return home + path.substring(7)
+        if (path.indexOf("file://") === 0) {
+            try {
+                return decodeURIComponent(path.substring(7))
+            } catch (error) {
+                return path.substring(7)
+            }
+        }
+        return path
+    }
+
+    function setDirectory(value) {
+        const normalized = normalizeDirectory(value)
+        SettingsService.wallpaperDirectory = normalized
+        return normalized
+    }
 
     function fileName(path) {
         const value = String(path || "")
