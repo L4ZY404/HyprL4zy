@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import Quickshell.Services.SystemTray
 import "../../services"
 
@@ -18,47 +19,57 @@ Item {
     readonly property real cellHeight: unit * 0.43
     readonly property real columnGap: unit * 0.035
     readonly property real rowGap: unit * 0.035
-    readonly property real verticalPadding: unit * 0.13
     readonly property real horizontalPadding: unit * 0.055
-
-    readonly property real naturalHeight: itemCount > 0
-        ? verticalPadding * 2
-            + rowCount * cellHeight
-            + Math.max(0, rowCount - 1) * rowGap
+    readonly property real gridHeight: itemCount > 0
+        ? rowCount * cellHeight + Math.max(0, rowCount - 1) * rowGap
         : 0
 
-    implicitHeight: Math.min(naturalHeight, unit * 2.2)
+    // EdgeIsland owns the outer vertical padding. Keep the tray's implicit
+    // height equal to its actual rows so Bar.qml can size the island without
+    // double-counting or clipping that padding.
+    implicitHeight: Math.min(gridHeight, unit * 2.2)
 
     Flickable {
         id: viewport
         anchors.fill: parent
-        anchors.topMargin: root.verticalPadding
-        anchors.bottomMargin: root.verticalPadding
         anchors.leftMargin: root.horizontalPadding
         anchors.rightMargin: root.horizontalPadding
         contentWidth: width
-        contentHeight: trayGrid.implicitHeight
+        contentHeight: Math.max(height, root.gridHeight)
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         flickableDirection: Flickable.VerticalFlick
-        interactive: contentHeight > height
+        interactive: root.gridHeight > height + 0.5
 
-        Grid {
+        Item {
             id: trayGrid
             width: viewport.width
-            columns: root.columns
-            columnSpacing: root.columnGap
-            rowSpacing: root.rowGap
+            height: root.gridHeight
+            y: root.gridHeight <= viewport.height
+                ? Math.max(0, (viewport.height - root.gridHeight) / 2)
+                : 0
+
+            readonly property real cellWidth: Math.max(1, (width - root.columnGap) / root.columns)
 
             Repeater {
                 model: SystemTray.items
 
                 delegate: Item {
                     id: trayButton
+                    required property int index
                     required property var modelData
 
-                    width: (trayGrid.width - root.columnGap) / 2
+                    readonly property int rowIndex: Math.floor(index / root.columns)
+                    readonly property int columnIndex: index % root.columns
+                    readonly property bool singleItemRow: root.itemCount % root.columns === 1
+                        && rowIndex === root.rowCount - 1
+
+                    width: trayGrid.cellWidth
                     height: root.cellHeight
+                    x: singleItemRow
+                        ? (trayGrid.width - width) / 2
+                        : columnIndex * (width + root.columnGap)
+                    y: rowIndex * (root.cellHeight + root.rowGap)
 
                     Rectangle {
                         anchors.centerIn: parent
@@ -79,17 +90,53 @@ Item {
                         mipmap: true
                     }
 
+                    QsMenuAnchor {
+                        id: trayMenu
+                        menu: trayButton.modelData.menu
+                        anchor.item: trayButton
+                        anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
+                    }
+
                     MouseArea {
+                        id: pointerArea
                         anchors.fill: parent
                         hoverEnabled: false
+                        preventStealing: true
                         cursorShape: Qt.PointingHandCursor
-                        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                        acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
+
+                        function openMenu() {
+                            if (trayButton.modelData.menu)
+                                trayMenu.open()
+                        }
+
+                        onPressed: mouse => {
+                            // Open on press so the right-button context event cannot be
+                            // swallowed later by Qt/Wayland context-menu synthesis.
+                            if (mouse.button === Qt.RightButton) {
+                                openMenu()
+                                mouse.accepted = true
+                            }
+                        }
 
                         onClicked: mouse => {
-                            if (mouse.button === Qt.MiddleButton)
+                            if (mouse.button === Qt.RightButton) {
+                                mouse.accepted = true
+                                return
+                            }
+
+                            if (mouse.button === Qt.MiddleButton) {
                                 trayButton.modelData.secondaryActivate()
+                                mouse.accepted = true
+                                return
+                            }
+
+                            if (trayButton.modelData.onlyMenu && trayButton.modelData.menu)
+                                openMenu()
                             else
                                 trayButton.modelData.activate()
+
+                            mouse.accepted = true
                         }
                     }
                 }

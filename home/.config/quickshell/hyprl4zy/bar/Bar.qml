@@ -480,7 +480,11 @@ PanelWindow {
             id: trayIsland
             visible: trayModule.itemCount > 0
             width: root.barWidth
-            height: visible ? Math.max(root.unit * 0.68, trayModule.implicitHeight) : 0
+            // TrayModule reports row content only; EdgeIsland adds its own
+            // symmetric top/bottom inset around that content.
+            height: visible
+                ? Math.max(root.unit * 0.68, trayModule.implicitHeight + trayIsland.verticalInset * 2)
+                : 0
             backgroundColor: theme.backgroundCss
             accentColor: theme.accent
             cornerRadius: root.radius

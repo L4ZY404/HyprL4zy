@@ -392,4 +392,24 @@ grep -Fq 'opacity: updatesIsland.compactRequested || updatesIsland.contextExpand
   || fail "updates island animated fade is missing"
 pass "zero-update island collapse"
 
+# 32. Tray delegates must receive a real index so explicit two-column placement
+# does not stack every SNI icon at 0,0. Context menus use Quickshell's native
+# QsMenuAnchor bound directly to SystemTrayItem.menu.
+grep -Fq 'required property int index' \
+  "$ROOT/home/.config/quickshell/hyprl4zy/modules/tray/TrayModule.qml" \
+  || fail "tray delegate index is not declared"
+grep -Fq 'singleItemRow' \
+  "$ROOT/home/.config/quickshell/hyprl4zy/modules/tray/TrayModule.qml" \
+  || fail "tray odd-row centering is missing"
+grep -Fq 'QsMenuAnchor {' \
+  "$ROOT/home/.config/quickshell/hyprl4zy/modules/tray/TrayModule.qml" \
+  || fail "tray native menu anchor is missing"
+grep -Fq 'anchor.item: trayButton' \
+  "$ROOT/home/.config/quickshell/hyprl4zy/modules/tray/TrayModule.qml" \
+  || fail "tray menu is not anchored to the clicked icon"
+grep -Fq 'acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton' \
+  "$ROOT/home/.config/quickshell/hyprl4zy/modules/tray/TrayModule.qml" \
+  || fail "tray right click is not accepted"
+pass "tray indexed layout and context menu"
+
 printf '\nAll installer tests passed.\n'
