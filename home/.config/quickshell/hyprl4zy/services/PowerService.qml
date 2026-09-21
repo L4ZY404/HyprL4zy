@@ -39,11 +39,9 @@ Item {
     // others expose 0..100. devicePercent() accepts both and can derive the
     // value from energy/capacity when Percentage is temporarily zero. sysfs
     // remains the last-resort source on unusual laptop firmware.
-    readonly property real batteryPercent: nativePercent > 0
-        ? clampPercent(nativePercent)
-        : (sysfsAvailable && Number(sysfsPercent) > 0
-            ? clampPercent(sysfsPercent)
-            : clampPercent(nativePercent >= 0 ? nativePercent : sysfsPercent))
+    readonly property real batteryPercent: sysfsAvailable
+        ? clampPercent(sysfsPercent)
+        : (nativeBatteryReady ? normalizeNativePercent(nativeBattery.percentage) : 0)
     readonly property bool charging: nativeBatteryReady
         ? (nativeBattery.state === UPowerDeviceState.Charging || nativeBattery.state === UPowerDeviceState.PendingCharge)
         : sysfsStatus.toLowerCase().indexOf("charging") >= 0 && sysfsStatus.toLowerCase().indexOf("discharging") < 0
